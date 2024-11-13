@@ -30,7 +30,7 @@ lojas = [
      "piso": "CEP 06454-000 - Piso Xingu", 
      "telefone": "(11) 91322-9232"},
     
-    {"loja": "AUSTRAL OUTLET", 
+    {"loja": "AUSTRAL CATARINA OUTLET", 
      "endereco": "Rod. Castelo Branco, KM 60", 
      "bairro_cidade_estado_cep": "São Roque/SP", 
      "piso": "CEP 18136-800 - Piso Térreo", 

@@ -20,7 +20,7 @@ class DefectManagerApp:
         self.logger = AustralLogger()
         
         # Configuração inicial da janela
-        self.root.title("REGISTRO DE DEFEITOS - AUSTRAL")
+        self.root.title("SISTEMA AUSTRAL - REGISTRO DE DEFEITOS")
         
         # Reduzir o tamanho inicial da janela
         self.root.geometry("1200x600")
@@ -206,7 +206,7 @@ class DefectManagerApp:
             ("ADICIONAR", self.adicionar_defeito, "primary"),
             ("ATUALIZAR", self.atualizar_defeito, "info"),
             ("EXCLUIR", self.excluir_defeito, "danger"),
-            ("LIMPAR", self.limpar_campos, "secondary"),
+            ("LIMPAR", self.limpar_campos, "warning"),
             ("EXPORTAR", self.exportar_excel, "success")
         ]
         

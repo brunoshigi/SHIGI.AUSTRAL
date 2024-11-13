@@ -51,6 +51,17 @@ class MixDiarioApp:
         # Foco inicial no campo de código
         self.codigo_entry.focus()
 
+        self.center_window()
+
+    def center_window(self):
+        """Centraliza a janela na tela do usuário"""
+        self.root.update_idletasks()
+        width = self.root.winfo_width()
+        height = self.root.winfo_height()
+        x = (self.root.winfo_screenwidth() // 2) - (width // 2)
+        y = (self.root.winfo_screenheight() // 2) - (height // 2)
+        self.root.geometry(f'{width}x{height}+{x}+{y}')
+
     def setup_ui(self):
         """Configura a interface do Mix Diário"""
         # Definir tamanho fixo da janela
@@ -113,7 +124,7 @@ class MixDiarioApp:
             top_frame,
             text="REGISTRAR",
             command=self.registrar_codigo,
-            style="Primary.TButton"
+            style="Info.TButton"
         )
         registrar_button.grid(row=0, column=4, padx=(5, 0), pady=5, sticky=tk.W)
 
@@ -167,7 +178,7 @@ class MixDiarioApp:
             button_frame,
             text="REMOVER ÚLTIMO",
             command=self.remover_ultimo,
-            style="Secondary.TButton"
+            style="danger.TButton"
         )
         remover_button.grid(row=0, column=0, padx=5, pady=5, sticky=tk.EW)
 
@@ -176,7 +187,7 @@ class MixDiarioApp:
             button_frame,
             text="LIMPAR TUDO",
             command=self.limpar_tudo,
-            style="Secondary.TButton"
+            style="Warning.TButton" 
         )
         limpar_button.grid(row=0, column=1, padx=5, pady=5, sticky=tk.EW)
 
@@ -184,8 +195,8 @@ class MixDiarioApp:
         atualizar_button = ttk.Button(
             button_frame,
             text="ATUALIZAR ARQUIVO",
-            command=self.finalizar_mix,
-            style="Primary.TButton"
+            command=self.finalizar_mix, 
+            style="Primar.TButton"
         )
         atualizar_button.grid(row=0, column=2, padx=5, pady=5, sticky=tk.EW)
 
@@ -193,7 +204,8 @@ class MixDiarioApp:
         self.last_update_label = ttk.Label(
             main_frame,
             text=f"ÚLTIMA ATUALIZAÇÃO: {self.last_update}",
-            font=FONT_LABEL
+            font=FONT_LABEL, 
+            foreground="red"
         )
         self.last_update_label.pack(pady=(5, 0), anchor=tk.E)
 

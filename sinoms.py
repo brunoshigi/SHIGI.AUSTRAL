@@ -13,7 +13,7 @@ from utils import UIHelper
 class PedidoSinOMSApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("CONTROLE DE PEDIDOS SINOMS - AUSTRAL")
+        self.root.title("SISTEMA AUSTRAL - CONTROLE DE ENVIO DE PEDIDOS SINOMS")
         self.config = ConfigManager()
         self.logger = AustralLogger()
 
@@ -96,7 +96,7 @@ class PedidoSinOMSApp:
         action_frame.grid_columnconfigure((0, 1, 2), weight=1)
 
         # Botões de Ação em Maiúsculas
-        ttk.Button(action_frame, text="MARCAR COMO ENVIADO", command=self.marcar_como_enviado, style="info.TButton").grid(row=0, column=0, padx=5, pady=5, sticky='ew')
+        ttk.Button(action_frame, text="MARCAR COMO ENVIADO", command=self.marcar_como_enviado, style="Warning.TButton").grid(row=0, column=0, padx=5, pady=5, sticky='ew')
         ttk.Button(action_frame, text="EXCLUIR PEDIDO", command=self.excluir_pedido, style="danger.TButton").grid(row=0, column=1, padx=5, pady=5, sticky='ew')
         ttk.Button(action_frame, text="EXPORTAR PARA EXCEL", command=self.exportar_excel, style="success.TButton").grid(row=0, column=2, padx=5, pady=5, sticky='ew')
 
