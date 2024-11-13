@@ -34,7 +34,7 @@ class EtiquetaClientesApp:
         self.load_last_values()
         
         # Define um tamanho inicial mais compacto para a janela
-        self.root.geometry("500x550")
+        self.root.geometry("500x500") 
 
     def setup_ui(self):
         """Configura a interface compacta com foco em delivery"""
@@ -43,7 +43,7 @@ class EtiquetaClientesApp:
         main_frame.pack(fill=tk.BOTH, expand=True)
 
         # Frame da loja mais compacto
-        loja_frame = ttk.LabelFrame(main_frame, text="LOJA", padding="5")# Removido padding superior e reduzido padding inferior para 5 pixels 
+        loja_frame = ttk.LabelFrame(main_frame, text="FILIAL", padding="5")# Removido padding superior e reduzido padding inferior para 5 pixels 
         loja_frame.pack(fill=tk.X, pady=(0, 5)) # Removido padding superior  e reduzido padding inferior para 5 pixels 
 
         self.loja_var = tk.StringVar()
@@ -66,9 +66,9 @@ class EtiquetaClientesApp:
         campos = [
             ("CLIENTE:", self.create_entry),
             ("CEP:", lambda p: self.create_entry(p, '<FocusOut>', self.consultar_cep_evento)),
-            ("NUMERO:", self.create_entry),
+            ("NÚMERO:", self.create_entry),
             ("COMPLEMENTO:", self.create_entry),
-            ("REFERENCIA:", self.create_entry)  # Removido acento de "REFERÊNCIA"
+            ("REFERÊNCIA:", self.create_entry)  # Removido acento de "REFERÊNCIA"
         ]
 
         for i, (label_text, create_func) in enumerate(campos):
@@ -86,8 +86,8 @@ class EtiquetaClientesApp:
             setattr(self, f"{attr_name}_entry", entry)
 
         # Preview mais compacto
-        preview_frame = ttk.LabelFrame(main_frame, text="PREVIEW", padding="5")
-        preview_frame.pack(fill=tk.BOTH, expand=True, pady=5)
+        preview_frame = ttk.LabelFrame(main_frame, text="PREVIEW ENDEREÇO", padding="5")
+        preview_frame.pack(fill=tk.BOTH, expand=True, pady=5) # 
 
         self.preview_text = tk.Text(
             preview_frame,
@@ -132,43 +132,62 @@ class EtiquetaClientesApp:
 
         try:
             # Aumentando o tamanho das fontes
-            fonte_titulo = ImageFont.truetype("arial.ttf", 45)  # Era 30
-            fonte_nome = ImageFont.truetype("arial.ttf", 60)    # Era 45
-            fonte_endereco = ImageFont.truetype("arial.ttf", 45) # Era 35
+            fonte_titulo = ImageFont.truetype("arial.ttf", 35)  # Era 30
+            fonte_nome = ImageFont.truetype("arial.ttf", 55)    # Era 45
+            fonte_endereco = ImageFont.truetype("arial.ttf", 40) # Era 35
             fonte_info = ImageFont.truetype("arial.ttf", 35)    # Era 25
         except:
             fonte_titulo = fonte_nome = fonte_endereco = fonte_info = ImageFont.load_default()
 
         y = self.MARGEM
 
+        # Adicionar o logo Austral
+        try:
+            logo = Image.open("logo_nome.png")
+            logo_width = 275 # é o tamanho do logo em pixels (largura), que foi ajustado para caber na etiqueta
+            ratio = logo.size[1] / logo.size[0]
+            logo_height = int(logo_width * ratio)
+            logo = logo.resize((logo_width, logo_height))
+            x_pos = (self.LARGURA_PAPEL - logo_width) // 2
+            imagem.paste(logo, (x_pos, y), mask=logo if 'A' in logo.getbands() else None)
+            y += logo_height + 20
+        except Exception as e:
+            UIHelper.show_message(
+                "AVISO",
+                "Logo não encontrado. Usando texto como alternativa.",
+                "warning"
+            )
+            draw.text((self.MARGEM, y), "Austral", font=fonte_titulo, fill="black") # faz
+            y += 50 # y representa a posição vertical
+
         # Linha superior
         draw.line([(self.MARGEM, y), (self.LARGURA_IMPRESSAO - self.MARGEM, y)], fill="black", width=3)
-        y += 25  # Aumentado de 10
+        y += 25  # é o espaçamento entre as linhas de texto,  nesse caso, espaço entre a linha superior e o texto
 
         # Data e hora
         data_hora = datetime.now().strftime("%d/%m/%Y %H:%M")
         draw.text((self.MARGEM, y), f"DATA/HORA: {data_hora}", fill="black", font=fonte_info)
-        y += 50  # Aumentado de 40
+        y += 50  # é o espaçamento entre as linhas de texto, neste caso, entre a data/hora e o nome da loja
 
         # Nome da loja
         loja = self.loja_var.get().upper()
         draw.text((self.MARGEM, y), loja, fill="black", font=fonte_titulo)
-        y += 60  # Aumentado de 50
+        y += 60  # é o espaçamento entre as linhas de texto, ou seja, a posição vertical
 
         # Linha divisória
         draw.line([(self.MARGEM, y), (self.LARGURA_IMPRESSAO - self.MARGEM, y)], fill="black", width=2)
-        y += 25  # Aumentado de 20
+        y += 25   # é o espaçamento entre as linhas de texto e a linha divisória abaixo do nome da loja
 
         # Nome do cliente em destaque
         nome_cliente = self.cliente_entry.get().upper()
-        draw.text((self.MARGEM, y), "CLIENTE:", fill="black", font=fonte_titulo)
-        y += 50  # Aumentado de 40
+        draw.text((self.MARGEM, y), "A/C", fill="black", font=fonte_titulo)
+        y += 30  #
         draw.text((self.MARGEM, y), nome_cliente, fill="black", font=fonte_nome)
-        y += 70  # Aumentado de 60
+        y += 60   # esse valor é o espaçamento entre as linhas de texto, ou seja, a posição vertical entre o nome do cliente e o endereço
 
         # Linha divisória
         draw.line([(self.MARGEM, y), (self.LARGURA_IMPRESSAO - self.MARGEM, y)], fill="black", width=2)
-        y += 35  # Aumentado de 20
+        y += 15 # é o espaçamento entre as linhas de texto e a linha divisória abaixo do nome do cliente
 
         # Endereço
         if self.endereco_completo:
@@ -177,7 +196,7 @@ class EtiquetaClientesApp:
             linhas_endereco = self.ajustar_texto_largura(draw, endereco, fonte_endereco, self.LARGURA_IMPRESSAO - 2 * self.MARGEM)
             for linha in linhas_endereco:
                 draw.text((self.MARGEM, y), linha, fill="black", font=fonte_endereco)
-                y += draw.textbbox((0, 0), linha, font=fonte_endereco)[3] + 5  # Ajuste de espaçamento
+                y += draw.textbbox((0, 0), linha, font=fonte_endereco)[3] + 7  # Ajuste de espaçamento entre as linhas de texto e entre o texto e a borda
 
             # Complemento
             if self.complemento_entry.get().strip():
@@ -197,28 +216,28 @@ class EtiquetaClientesApp:
             linhas_cidade_estado = self.ajustar_texto_largura(draw, cidade_estado, fonte_endereco, self.LARGURA_IMPRESSAO - 2 * self.MARGEM)
             for linha in linhas_cidade_estado:
                 draw.text((self.MARGEM, y), linha, fill="black", font=fonte_endereco)
-                y += draw.textbbox((0, 0), linha, font=fonte_endereco)[3] + 5
+                y += draw.textbbox((0, 0), linha, font=fonte_endereco)[3] + 5 # Ajuste de espaçamento entre as linhas de texto e entre o texto e a borda
 
             # CEP
             draw.text((self.MARGEM, y), f"CEP: {self.endereco_completo['cep']}", fill="black", font=fonte_endereco)
-            y += draw.textbbox((0, 0), "CEP:", font=fonte_endereco)[3] + 25
+            y += draw.textbbox((0, 0), "CEP:", font=fonte_endereco)[3] + 25 # Ajuste de espaçamento entre as linhas de texto e entre o texto e a borda
             
 
         # Linha divisória
         draw.line([(self.MARGEM, y), (self.LARGURA_IMPRESSAO - self.MARGEM, y)], fill="black", width=2)
-        y += 30  # Aumentado de 20
+        y += 30  # espaçamento entre as linhas de texto e a linha divisória abaixo do endereço 
 
         # Referência
         if self.referencia_entry.get().strip():
             draw.text((self.MARGEM, y), "REFERÊNCIA:", fill="black", font=fonte_titulo)
-            y += 45  # Aumentado de 35
+            y += 45  # referente ao espaçamento entre a linha de texto e o texto que ficará abaixo
             linhas_referencia = self.ajustar_texto_largura(draw, self.referencia_entry.get().strip().upper(), fonte_endereco, self.LARGURA_IMPRESSAO - 2 * self.MARGEM)
             for linha in linhas_referencia:
                 draw.text((self.MARGEM, y), linha, fill="black", font=fonte_endereco)
                 y += draw.textbbox((0, 0), linha, font=fonte_endereco)[3] + 5
 
         # Linha inferior
-        y = self.ALTURA_ETIQUETA - self.MARGEM - 15  # Ajustado de 10
+        y = self.ALTURA_ETIQUETA - self.MARGEM - 15  # Altura em relação à borda inferior
         draw.line([(self.MARGEM, y), (self.LARGURA_IMPRESSAO - self.MARGEM, y)], fill="black", width=3)
 
         return imagem

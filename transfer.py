@@ -25,8 +25,8 @@ class EtiquetaTransferenciaApp:
         self.logger = AustralLogger()
         
         # Configurações da impressora térmica (80mm)
-        self.LARGURA_PAPEL = 450
-        self.LARGURA_IMPRESSAO = 450
+        self.LARGURA_PAPEL = 500
+        self.LARGURA_IMPRESSAO = 470
         self.ALTURA_ETIQUETA = 650 # Aumentado para acomodar melhor o conteúdo
         self.MARGEM = 10
         
@@ -127,12 +127,12 @@ class EtiquetaTransferenciaApp:
             
             # Define as fontes com tamanhos diferentes para origem e destino
             try:
-                fonte_titulo_destino = ImageFont.truetype("arial.ttf", 45)  # Fonte maior para destino
-                fonte_titulo_origem = ImageFont.truetype("arial.ttf", 35)   # Fonte menor para origem
-                fonte_texto_destino = ImageFont.truetype("arial.ttf", 35)   # Texto destino maior
-                fonte_texto_origem = ImageFont.truetype("arial.ttf", 26)    # Texto origem menor
-                fonte_info = ImageFont.truetype("arial.ttf", 26)            # Informações gerais
-                fonte_alerta = ImageFont.truetype("arial.ttf", 36)          # Alertas
+                fonte_titulo_destino = ImageFont.truetype("arial.ttf", 35)  # Fonte maior para destino
+                fonte_titulo_origem = ImageFont.truetype("arial.ttf", 30)   # Fonte menor para origem
+                fonte_texto_destino = ImageFont.truetype("arial.ttf", 40)   # Texto destino maior
+                fonte_texto_origem = ImageFont.truetype("arial.ttf", 30)    # Texto origem menor
+                fonte_info = ImageFont.truetype("arial.ttf", 30)            # Informações gerais
+                fonte_alerta = ImageFont.truetype("arial.ttf", 38)          # Alertas
             except:
                 fonte_titulo_destino = fonte_titulo_origem = fonte_texto_destino = fonte_texto_origem = fonte_info = fonte_alerta = ImageFont.load_default()
 
@@ -149,7 +149,7 @@ class EtiquetaTransferenciaApp:
                 for line in lines:
                     w = draw.textlength(line, fonte_alerta)
                     x = (self.LARGURA_PAPEL - w) // 2
-                    draw.text((x, y), line, font=fonte_alerta, fill="black")
+                    draw.text((x, y), line, font=fonte_alerta, fill="red")
                     y += 40
                 y += 20
 
@@ -157,7 +157,7 @@ class EtiquetaTransferenciaApp:
             try:
                 logo = Image.open("logo_nome.png")
                 # Redimensiona o logo para um tamanho adequado
-                logo_width = 160 
+                logo_width = 200
                 ratio = logo.size[1] / logo.size[0]
                 logo_height = int(logo_width * ratio)
                 logo = logo.resize((logo_width, logo_height))
@@ -194,12 +194,12 @@ class EtiquetaTransferenciaApp:
                 draw.text((self.MARGEM, y), destino_info["loja"], font=fonte_texto_destino, fill="black")
                 y += 40
                 draw.text((self.MARGEM, y), destino_info["endereco"], font=fonte_info, fill="black")
-                y += 25
+                y += 30
                 draw.text((self.MARGEM, y), destino_info["bairro_cidade_estado_cep"], font=fonte_info, fill="black")
-                y += 25
+                y += 30
                 if destino_info.get("piso"):
                     draw.text((self.MARGEM, y), destino_info["piso"], font=fonte_info, fill="black")
-                    y += 25
+                    y += 30
                 if destino_info.get("telefone"):
                     draw.text((self.MARGEM, y), f"Tel: {destino_info['telefone']}", font=fonte_info, fill="black")
                     y += 30
@@ -214,7 +214,7 @@ class EtiquetaTransferenciaApp:
                 linha = "TOCAR INTERFONE 0525"
                 w = draw.textlength(linha, fonte_alerta)
                 x = (self.LARGURA_PAPEL - w) // 2
-                draw.text((x, y), linha, font=fonte_alerta, fill="black")
+                draw.text((x, y), linha, font=fonte_alerta, fill="red")
 
             return imagem
             
@@ -328,6 +328,6 @@ class EtiquetaTransferenciaApp:
             )
 
 if __name__ == "__main__":
-    root = ttk.Window(themename="vapor")
+    root = ttk.Window(themename="litera")
     app = EtiquetaTransferenciaApp(root)
     root.mainloop()
