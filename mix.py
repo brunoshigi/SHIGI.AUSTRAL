@@ -167,7 +167,7 @@ class MixDiarioApp:
             button_frame,
             text="REMOVER ÚLTIMO",
             command=self.remover_ultimo,
-            style="Secondary.TButton"
+            style="danger.TButton"
         )
         remover_button.grid(row=0, column=0, padx=5, pady=5, sticky=tk.EW)
 
@@ -176,7 +176,7 @@ class MixDiarioApp:
             button_frame,
             text="LIMPAR TUDO",
             command=self.limpar_tudo,
-            style="Secondary.TButton"
+            style="Warning.TButton" 
         )
         limpar_button.grid(row=0, column=1, padx=5, pady=5, sticky=tk.EW)
 
@@ -184,8 +184,8 @@ class MixDiarioApp:
         atualizar_button = ttk.Button(
             button_frame,
             text="ATUALIZAR ARQUIVO",
-            command=self.finalizar_mix,
-            style="Primary.TButton"
+            command=self.finalizar_mix, 
+            style="Primar.TButton"
         )
         atualizar_button.grid(row=0, column=2, padx=5, pady=5, sticky=tk.EW)
 
@@ -193,7 +193,8 @@ class MixDiarioApp:
         self.last_update_label = ttk.Label(
             main_frame,
             text=f"ÚLTIMA ATUALIZAÇÃO: {self.last_update}",
-            font=FONT_LABEL
+            font=FONT_LABEL, 
+            foreground="red"
         )
         self.last_update_label.pack(pady=(5, 0), anchor=tk.E)
 
