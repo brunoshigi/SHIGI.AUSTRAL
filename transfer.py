@@ -15,20 +15,20 @@ from utils import UIHelper
 
 class EtiquetaTransferenciaApp:
     def __init__(self, root):
-        self.root = root
+        self.root = root   
         
-        UIHelper.center_window(self.root, 550, 250)
-        self.root.title("SISTEMA AUSTRAL - TRANSFERÊNCIA")
-        self.root.resizable(False, False)
+        UIHelper.center_window(self.root, width=600, height=253)
+        self.root.title("SISTEMA AUSTRAL - ETIQUETA DE TRANSFERÊNCIA INTERNA") 
+        self.root.resizable(False, False) # Impede redimensionamento
         
-        self.config = ConfigManager()
-        self.logger = AustralLogger()
+        self.config = ConfigManager() # Gerenciador de configurações
+        self.logger = AustralLogger() # Logger de ações
         
         # Configurações da impressora térmica (80mm)
-        self.LARGURA_PAPEL = 500
-        self.LARGURA_IMPRESSAO = 470
-        self.ALTURA_ETIQUETA = 650 # Aumentado para acomodar melhor o conteúdo
-        self.MARGEM = 10
+        self.LARGURA_PAPEL = 500 # Aumentado para acomodar melhor o conteúdo
+        self.LARGURA_IMPRESSAO = 470 # Aumentado para acomodar melhor o conteúdo
+        self.ALTURA_ETIQUETA = 680 # Aumentado para acomodar melhor o conteúdo
+        self.MARGEM = 10 # Margem interna
         
         self.setup_ui()
         setup_window_icon(self.root)
@@ -47,7 +47,7 @@ class EtiquetaTransferenciaApp:
             font=FONT_TITLE,
             bootstyle="primary"
         )
-        title_label.pack(pady=(0, 20))
+        title_label.pack(pady=(0, 20)) # Espaçamento inferior
 
         # Frame para as lojas
         shipping_frame = ttk.Frame(main_frame)
