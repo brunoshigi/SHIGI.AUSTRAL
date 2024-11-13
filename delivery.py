@@ -18,7 +18,7 @@ from utils import FONT_LABEL, FONT_ENTRY
 class EtiquetaClientesApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("ETIQUETA PARA DELIVERY")
+        self.root.title("SISTEMA AUSTRAL - ETIQUETA ENVIO CLIENTES")
         self.config = ConfigManager()
         self.logger = AustralLogger()
         self.endereco_completo = {}
@@ -34,7 +34,8 @@ class EtiquetaClientesApp:
         self.load_last_values()
         
         # Define um tamanho inicial mais compacto para a janela
-        self.root.geometry("500x500") 
+        self.root.geometry("500x500")
+        self.center_window()  # Centraliza a janela na tela do usuário
 
     def setup_ui(self):
         """Configura a interface compacta com foco em delivery"""
@@ -106,7 +107,7 @@ class EtiquetaClientesApp:
             button_frame,
             text="LIMPAR",
             command=self.limpar_campos,
-            style="Secondary.TButton",
+            style="danger.TButton",
             width=12
         ).pack(side=tk.LEFT, padx=2)
 
@@ -114,7 +115,7 @@ class EtiquetaClientesApp:
             button_frame,
             text="IMPRIMIR",
             command=self.gerar_etiqueta,
-            style="Primary.TButton",
+            style="Info.TButton",
             width=12
         ).pack(side=tk.RIGHT, padx=2)
 
@@ -124,6 +125,15 @@ class EtiquetaClientesApp:
         if bind_event and bind_func:
             entry.bind(bind_event, bind_func)
         return entry
+
+    def center_window(self):
+        """Centraliza a janela na tela do usuário"""
+        self.root.update_idletasks()
+        width = self.root.winfo_width()
+        height = self.root.winfo_height()
+        x = (self.root.winfo_screenwidth() // 2) - (width // 2)
+        y = (self.root.winfo_screenheight() // 2) - (height // 2)
+        self.root.geometry(f'{width}x{height}+{x}+{y}')
 
     def criar_imagem_etiqueta(self):
         """Cria a imagem da etiqueta otimizada para impressora térmica"""
@@ -390,10 +400,8 @@ class EtiquetaClientesApp:
         return linhas
 
 if __name__ == "__main__":
-    # Opção 1: Usando tkinter padrão
-    root = tk.Tk()
-    # Configurar tema aqui se necessário
-    
+    root = ttk.Window(themename="litera")
+    root.title("ETIQUETA PARA ENTREGA DE CLIENTES")
     app = EtiquetaClientesApp(root)
     root.mainloop()
 

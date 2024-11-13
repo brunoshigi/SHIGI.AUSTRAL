@@ -51,6 +51,17 @@ class MixDiarioApp:
         # Foco inicial no campo de código
         self.codigo_entry.focus()
 
+        self.center_window()
+
+    def center_window(self):
+        """Centraliza a janela na tela do usuário"""
+        self.root.update_idletasks()
+        width = self.root.winfo_width()
+        height = self.root.winfo_height()
+        x = (self.root.winfo_screenwidth() // 2) - (width // 2)
+        y = (self.root.winfo_screenheight() // 2) - (height // 2)
+        self.root.geometry(f'{width}x{height}+{x}+{y}')
+
     def setup_ui(self):
         """Configura a interface do Mix Diário"""
         # Definir tamanho fixo da janela
@@ -113,7 +124,7 @@ class MixDiarioApp:
             top_frame,
             text="REGISTRAR",
             command=self.registrar_codigo,
-            style="Primary.TButton"
+            style="Info.TButton"
         )
         registrar_button.grid(row=0, column=4, padx=(5, 0), pady=5, sticky=tk.W)
 
