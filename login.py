@@ -210,7 +210,72 @@ class LoginWindow:
         """Loop para atualizar as cotações periodicamente"""
         while True:
             self.update_currency_rates()
-            time.sleep(30)  # Atualiza a cada 30 segundos
+            time.sleep(600)  # Atualiza a cada 10 minutos
+
+    def setup_ui(self):
+        """Configura a interface gráfica de login"""
+        style = ttk.Style()
+        style.configure('Custom.TEntry', padding=10)
+        
+        self.main_frame = ttk.Frame(self.root, padding="20")
+        self.main_frame.pack(fill=tk.BOTH, expand=True)
+
+        # Logo e título
+        ttk.Label(
+            self.main_frame,
+            text="AUSTRAL",
+            font=('Helvetica', 32, 'bold'),
+            bootstyle="primary"
+        ).pack(pady=30)
+
+        # Frame do formulário
+        form_frame = ttk.Frame(self.main_frame)
+        form_frame.pack(fill=tk.BOTH, expand=True, padx=30)
+        self.create_login_form(form_frame)
+        
+        # Frame para as cotações
+        self.currency_frame = ttk.LabelFrame(
+            self.main_frame,
+            text="Cotações",
+            padding="10",
+            bootstyle="primary"
+        )
+        self.currency_frame.pack(fill=tk.X, padx=30, pady=(0, 20))
+        
+        # Labels para as cotações
+        self.usd_label = ttk.Label(
+            self.currency_frame,
+            text="USD: Carregando...",
+            font=FONT_LABEL,
+            bootstyle="primary"
+        )
+        self.usd_label.pack(anchor=tk.W)
+        
+        self.eur_label = ttk.Label(
+            self.currency_frame,
+            text="EUR: Carregando...",
+            font=FONT_LABEL,
+            bootstyle="primary"
+        )
+        self.eur_label.pack(anchor=tk.W)
+        
+        # Label para última atualização
+        self.update_label = ttk.Label(
+            self.currency_frame,
+            text="Última atualização: --:--:--",
+            font=('Helvetica', 8),
+            bootstyle="secondary"
+        )
+        self.update_label.pack(anchor=tk.E, pady=(5, 0))
+
+        # Botão para atualizar manualmente
+        self.update_button = ttk.Button(
+            self.currency_frame,
+            text="Atualizar Cotações",
+            command=self.update_currency_rates,
+            bootstyle="success"
+        )
+        self.update_button.pack(anchor=tk.E, pady=(10, 0))
 
     def center_window(self, width, height):
         """Centraliza a janela na tela"""
