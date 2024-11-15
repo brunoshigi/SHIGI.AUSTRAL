@@ -19,7 +19,7 @@ class LoginWindow:
     def __init__(self, root: tk.Tk, on_login_success: Callable):
         self.root = root
         self.root.title("AUSTRAL - LOGIN")
-        self.root.geometry("400x600")  # Aumentei a altura para acomodar as cotações
+        self.root.geometry("400x600")
         self.config = ConfigManager()
         self.logger = AustralLogger()
         self.on_login_success = on_login_success
@@ -27,7 +27,7 @@ class LoginWindow:
         setup_window_icon(self.root)
         self.setup_ui()
         self.init_database()
-        self.center_window(400, 550)  # Ajustei a altura aqui também
+        self.center_window(400, 600)
         
         # Inicia a thread de atualização das cotações
         self.update_thread = threading.Thread(target=self.update_currency_loop, daemon=True)
@@ -39,7 +39,6 @@ class LoginWindow:
             conn = sqlite3.connect(self.config.get('database.path'))
             cursor = conn.cursor()
             
-            # Cria tabela de usuários
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS users (
                     id INTEGER PRIMARY KEY,
@@ -51,7 +50,6 @@ class LoginWindow:
                 )
             ''')
 
-            # Cria usuário admin se não existir
             admin_password = hashlib.sha256("admin123".encode()).hexdigest()
             cursor.execute('''
                 INSERT OR IGNORE INTO users (username, password, role)
@@ -74,6 +72,41 @@ class LoginWindow:
         style = ttk.Style()
         style.configure('Custom.TEntry', padding=10)
         
+        # Cores personalizadas mais sofisticadas
+        COLORS = {
+            'background': '#FFFFFF',
+            'card_bg': '#F8F9FA',
+            'text_dark': '#1E293B',
+            'text_medium': '#475569',
+            'value_color': '#334155',
+            'accent': '#334155',
+            'border': '#E2E8F0'
+        }
+        
+        # Configurações de estilo para os displays de cotação
+        style.configure('Currency.TLabel', 
+                       font=('Helvetica', 12, 'bold'),
+                       padding=5,
+                       background=COLORS['card_bg'],
+                       foreground=COLORS['value_color'])
+        
+        style.configure('CurrencySymbol.TLabel',
+                       font=('Helvetica', 14, 'bold'),
+                       foreground=COLORS['accent'])
+                       
+        style.configure('Currency.TFrame',
+                       background=COLORS['card_bg'],
+                       relief="solid",
+                       borderwidth=1)
+        
+        style.configure('Title.TLabel',
+                       font=('Helvetica', 32, 'bold'),
+                       foreground=COLORS['text_dark'])
+                       
+        style.configure('Header.TLabel',
+                       font=('Helvetica', 10, 'bold'),
+                       foreground=COLORS['text_medium'])
+        
         self.main_frame = ttk.Frame(self.root, padding="20")
         self.main_frame.pack(fill=tk.BOTH, expand=True)
 
@@ -81,58 +114,116 @@ class LoginWindow:
         ttk.Label(
             self.main_frame,
             text="AUSTRAL",
-            font=('Helvetica', 32, 'bold'),
-            bootstyle="primary"
-        ).pack(pady=30)
+            style='Title.TLabel'
+        ).pack(pady=25)
 
         # Frame do formulário
         form_frame = ttk.Frame(self.main_frame)
         form_frame.pack(fill=tk.BOTH, expand=True, padx=30)
         self.create_login_form(form_frame)
         
-        # Frame para as cotações
-        self.currency_frame = ttk.LabelFrame(
-            self.main_frame,
-            text="Cotações",
-            padding="10",
-            bootstyle="primary"
-        )
-        self.currency_frame.pack(fill=tk.X, padx=30, pady=(0, 20))
+        # Frame para as cotações com título
+        quotes_title_frame = ttk.Frame(self.main_frame)
+        quotes_title_frame.pack(fill=tk.X, padx=10, pady=(7, 5))
         
-        # Labels para as cotações
+        ttk.Label(
+            quotes_title_frame,
+            text="COTAÇÕES DO DIA",
+            style='Header.TLabel'
+        ).pack(side=tk.LEFT)
+        
+        # Container para os cards de cotação
+        currency_container = ttk.Frame(self.main_frame)
+        currency_container.pack(fill=tk.X, padx=25)
+        
+        # Frame para USD
+        usd_frame = ttk.Frame(currency_container)
+        usd_frame.pack(side=tk.LEFT, expand=True, padx=(0, 5))
+        
+        ttk.Label(
+            usd_frame,
+            text="$",
+            style='CurrencySymbol.TLabel'
+        ).pack(pady=(0, 2))
+        
+        # Frame para o valor do USD com borda
+        usd_value_frame = ttk.Frame(usd_frame, style='Currency.TFrame')
+        usd_value_frame.pack(fill=tk.X)
+        
         self.usd_label = ttk.Label(
-            self.currency_frame,
-            text="USD: Carregando...",
-            font=FONT_LABEL,
-            bootstyle="primary"
+            usd_value_frame,
+            text="carregando...",
+            style='Currency.TLabel',
+            cursor="hand2",
+            width=12
         )
-        self.usd_label.pack(anchor=tk.W)
+        self.usd_label.pack(padx=10, pady=5)
+        self.usd_label.bind('<Button-1>', lambda e: self.copy_value(self.usd_label.cget("text")))
+        
+        # Frame para EUR
+        eur_frame = ttk.Frame(currency_container)
+        eur_frame.pack(side=tk.LEFT, expand=True, padx=(5, 0))
+        
+        ttk.Label(
+            eur_frame,
+            text="€",
+            style='CurrencySymbol.TLabel'
+        ).pack(pady=(0, 2))
+        
+        # Frame para o valor do EUR com borda
+        eur_value_frame = ttk.Frame(eur_frame, style='Currency.TFrame')
+        eur_value_frame.pack(fill=tk.X)
         
         self.eur_label = ttk.Label(
-            self.currency_frame,
-            text="EUR: Carregando...",
-            font=FONT_LABEL,
-            bootstyle="primary"
+            eur_value_frame,
+            text="carregando...",
+            style='Currency.TLabel',
+            cursor="hand2",
+            width=12
         )
-        self.eur_label.pack(anchor=tk.W)
+        self.eur_label.pack(padx=10, pady=5)
+        self.eur_label.bind('<Button-1>', lambda e: self.copy_value(self.eur_label.cget("text")))
         
         # Label para última atualização
         self.update_label = ttk.Label(
-            self.currency_frame,
-            text="Última atualização: --:--:--",
+            self.main_frame,
+            text="Atualização automática a cada 10 minutos",
             font=('Helvetica', 8),
-            bootstyle="secondary"
+            foreground=COLORS['text_medium']
         )
-        self.update_label.pack(anchor=tk.E, pady=(5, 0))
+        self.update_label.pack(pady=(8, 0))
+        
+        # Marca d'água no canto inferior direito
+        watermark = ttk.Label(
+            self.main_frame,
+            text="@brunoshigi github",
+            font=('Helvetica', 8),
+            foreground=COLORS['text_medium']
+        )
+        watermark.pack(side=tk.BOTTOM, anchor=tk.SE, padx=10, pady=10)
+
+    def copy_value(self, value):
+        """Copia o valor da cotação para a área de transferência"""
+        if value != "carregando..." and value != "erro":
+            self.root.clipboard_clear()
+            self.root.clipboard_append(value)
+            messagebox.showinfo("Copiado!", "Valor copiado para a área de transferência.")
 
     def create_login_form(self, form_frame):
         """Cria os campos e botões do formulário de login"""
+        COLORS = {
+            'text_dark': '#1E293B',
+            'text_medium': '#475569',
+            'button': '#334155',
+            'error': '#DC2626'
+        }
+        
         # Usuário
         ttk.Label(
             form_frame,
             text="USUÁRIO:",
             font=FONT_LABEL,
-            bootstyle="primary"
+            foreground=COLORS['text_medium']
         ).pack(anchor=tk.W, pady=(0, 5))
         
         self.username_entry = ttk.Entry(
@@ -148,7 +239,7 @@ class LoginWindow:
             form_frame,
             text="SENHA:",
             font=FONT_LABEL,
-            bootstyle="primary"
+            foreground=COLORS['text_medium']
         ).pack(anchor=tk.W, pady=(0, 5))
         
         self.password_entry = ttk.Entry(
@@ -160,20 +251,26 @@ class LoginWindow:
         )
         self.password_entry.pack(pady=(0, 20))
 
-        # Botão de login
-        ttk.Button(
+        # Botão de login com estilo personalizado
+        login_button = ttk.Button(
             form_frame,
             text="ENTRAR",
             command=self.validate_login,
             width=20,
-            bootstyle="primary"
-        ).pack(pady=10)
+            style='Custom.TButton'
+        )
+        style = ttk.Style()
+        style.configure('Custom.TButton',
+                       background=COLORS['button'],
+                       foreground='white',
+                       font=('Helvetica', 10, 'bold'))
+        login_button.pack(pady=10)
 
         # Label de erro
         self.error_label = ttk.Label(
             form_frame,
             text="",
-            foreground="red",
+            foreground=COLORS['error'],
             font=FONT_LABEL
         )
         self.error_label.pack(pady=10)
@@ -194,8 +291,8 @@ class LoginWindow:
             usd_rate = float(data['USDBRL']['bid'])
             eur_rate = float(data['EURBRL']['bid'])
             
-            self.usd_label.config(text=f"USD: R$ {usd_rate:.2f}")
-            self.eur_label.config(text=f"EUR: R$ {eur_rate:.2f}")
+            self.usd_label.config(text=f"R$ {usd_rate:.2f}")
+            self.eur_label.config(text=f"R$ {eur_rate:.2f}")
             
             # Atualiza o horário
             current_time = datetime.now().strftime('%H:%M:%S')
@@ -203,79 +300,14 @@ class LoginWindow:
             
         except Exception as e:
             self.logger.logger.error(f"Erro ao atualizar cotações: {str(e)}")
-            self.usd_label.config(text="USD: Erro ao atualizar")
-            self.eur_label.config(text="EUR: Erro ao atualizar")
+            self.usd_label.config(text="erro")
+            self.eur_label.config(text="erro")
 
     def update_currency_loop(self):
         """Loop para atualizar as cotações periodicamente"""
         while True:
             self.update_currency_rates()
             time.sleep(600)  # Atualiza a cada 10 minutos
-
-    def setup_ui(self):
-        """Configura a interface gráfica de login"""
-        style = ttk.Style()
-        style.configure('Custom.TEntry', padding=10)
-        
-        self.main_frame = ttk.Frame(self.root, padding="20")
-        self.main_frame.pack(fill=tk.BOTH, expand=True)
-
-        # Logo e título
-        ttk.Label(
-            self.main_frame,
-            text="AUSTRAL",
-            font=('Helvetica', 32, 'bold'),
-            bootstyle="primary"
-        ).pack(pady=30)
-
-        # Frame do formulário
-        form_frame = ttk.Frame(self.main_frame)
-        form_frame.pack(fill=tk.BOTH, expand=True, padx=30)
-        self.create_login_form(form_frame)
-        
-        # Frame para as cotações
-        self.currency_frame = ttk.LabelFrame(
-            self.main_frame,
-            text="Cotações",
-            padding="10",
-            bootstyle="primary"
-        )
-        self.currency_frame.pack(fill=tk.X, padx=30, pady=(0, 20))
-        
-        # Labels para as cotações
-        self.usd_label = ttk.Label(
-            self.currency_frame,
-            text="USD: Carregando...",
-            font=FONT_LABEL,
-            bootstyle="primary"
-        )
-        self.usd_label.pack(anchor=tk.W)
-        
-        self.eur_label = ttk.Label(
-            self.currency_frame,
-            text="EUR: Carregando...",
-            font=FONT_LABEL,
-            bootstyle="primary"
-        )
-        self.eur_label.pack(anchor=tk.W)
-        
-        # Label para última atualização
-        self.update_label = ttk.Label(
-            self.currency_frame,
-            text="Última atualização: --:--:--",
-            font=('Helvetica', 8),
-            bootstyle="secondary"
-        )
-        self.update_label.pack(anchor=tk.E, pady=(5, 0))
-
-        # Botão para atualizar manualmente
-        self.update_button = ttk.Button(
-            self.currency_frame,
-            text="Atualizar Cotações",
-            command=self.update_currency_rates,
-            bootstyle="success"
-        )
-        self.update_button.pack(anchor=tk.E, pady=(10, 0))
 
     def center_window(self, width, height):
         """Centraliza a janela na tela"""
