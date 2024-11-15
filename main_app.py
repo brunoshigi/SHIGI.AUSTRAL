@@ -193,6 +193,15 @@ class AustralApp:
         )
         logout_button.pack(side=tk.RIGHT)
 
+        # Marca d'água no canto inferior direito
+        watermark = ttk.Label(
+            self.main_frame,
+            text="@brunoshigi github",
+            font=('Helvetica', 7),
+            foreground='#475569'
+        )
+        watermark.pack(side=tk.BOTTOM, anchor=tk.SE, padx=5, pady=5)
+
     @log_action("logout")
     def logout(self):
         """Realiza o logout do usuário"""

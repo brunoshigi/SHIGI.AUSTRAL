@@ -197,7 +197,7 @@ class LoginWindow:
         watermark = ttk.Label(
             self.main_frame,
             text="@brunoshigi github",
-            font=('Helvetica', 8),
+            font=('Helvetica', 7),
             foreground=COLORS['text_medium']
         )
         watermark.pack(side=tk.BOTTOM, anchor=tk.SE, padx=10, pady=10)
