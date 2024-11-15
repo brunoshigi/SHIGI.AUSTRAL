@@ -135,7 +135,7 @@ class EtiquetaTransferenciaApp:
             button_frame,
             text="LIMPAR CAMPOS",
             command=self.limpar_campos,
-            style="Secondary.TButton",
+            style="Danger.TButton",
             width=25
         ).pack(side=tk.LEFT, padx=5)
 
