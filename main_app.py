@@ -2,12 +2,13 @@ import tkinter as tk
 from tkinter import messagebox
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
-from ttkbootstrap import Window  # Importar Window diretamente
+from ttkbootstrap import Window
 from datetime import datetime
 from typing import Callable, List, Dict
 from config import ConfigManager
 from logger import AustralLogger, log_action
 from utils import FONT_TITLE, FONT_LABEL, setup_window_icon
+from PIL import Image, ImageTk  # Importar para manipulação de imagens
 
 # Importação dos módulos
 from mix import MixDiarioApp
@@ -68,12 +69,23 @@ class AustralApp:
         title_frame = ttk.Frame(header_frame)
         title_frame.pack(side=tk.LEFT)
         
+        # Carrega a imagem do logotipo
+        try:
+            logo_image = Image.open("assets/logo_nome.png")
+            logo_image = logo_image.resize((50, 50), Image.ANTIALIAS)
+            logo_photo = ImageTk.PhotoImage(logo_image)
+            logo_label = ttk.Label(title_frame, image=logo_photo)
+            logo_label.image = logo_photo  # Mantém a referência
+            logo_label.pack(side=tk.LEFT, padx=(0, 10))
+        except Exception as e:
+            self.logger.logger.error(f"Erro ao carregar logotipo: {str(e)}")
+
         title_label = ttk.Label(
             title_frame,
             text="SISTEMA AUSTRAL",
             font=FONT_TITLE,
         )
-        title_label.pack()
+        title_label.pack(side=tk.LEFT)
 
         # Informações do usuário
         user_frame = ttk.Frame(header_frame)
@@ -115,14 +127,19 @@ class AustralApp:
             }
         ]
 
-        # Cria botões
+        # Cria botões com estilo personalizado
+        style = ttk.Style()
+        style.configure('Function.TButton',
+                        font=('Helvetica', 12, 'bold'),
+                        width=30)
+
         for func in functions:
             button = ttk.Button(
                 self.buttons_container,
                 text=func['title'],
                 command=func['command'],
-                bootstyle="primary",
-                width=30
+                style='Function.TButton',
+                bootstyle="primary"
             )
             button.pack(pady=10)
 
@@ -211,6 +228,6 @@ class AustralApp:
 
 
 if __name__ == "__main__":
-    root = Window(themename="litera")  # Correção aqui
+    root = Window(themename="litera")
     app = AustralApp(root, "admin", "admin")
     root.mainloop()

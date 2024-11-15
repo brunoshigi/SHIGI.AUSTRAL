@@ -14,6 +14,7 @@ from config import ConfigManager
 from logger import AustralLogger, log_action
 from utils import FONT_LABEL, FONT_ENTRY, setup_window_icon
 from utils import UIHelper
+from PIL import Image, ImageTk  # Importar para manipulação de imagens
 
 class LoginWindow:
     def __init__(self, root: tk.Tk, on_login_success: Callable):
@@ -80,7 +81,9 @@ class LoginWindow:
             'text_medium': '#475569',
             'value_color': '#334155',
             'accent': '#334155',
-            'border': '#E2E8F0'
+            'border': '#E2E8F0',
+            'button': '#007BFF',  # Botão azul padrão
+            'error': '#DC2626'
         }
         
         # Configurações de estilo para os displays de cotação
@@ -107,15 +110,33 @@ class LoginWindow:
                        font=('Helvetica', 10, 'bold'),
                        foreground=COLORS['text_medium'])
         
+        # Estilo para botões personalizados
+        style.configure('Custom.TButton',
+                        font=('Helvetica', 12, 'bold'),
+                        foreground='white',
+                        background=COLORS['button'],
+                        borderwidth=0)
+        
         self.main_frame = ttk.Frame(self.root, padding="20")
         self.main_frame.pack(fill=tk.BOTH, expand=True)
 
         # Logo e título
-        ttk.Label(
-            self.main_frame,
-            text="AUSTRAL",
-            style='Title.TLabel'
-        ).pack(pady=25)
+        # Carrega a imagem do logotipo
+        try:
+            logo_image = Image.open("assets/logo_nome.png")
+            logo_image = logo_image.resize((150, 150), Image.ANTIALIAS)
+            logo_photo = ImageTk.PhotoImage(logo_image)
+            logo_label = ttk.Label(self.main_frame, image=logo_photo)
+            logo_label.image = logo_photo  # Mantém a referência
+            logo_label.pack(pady=10)
+        except Exception as e:
+            self.logger.logger.error(f"Erro ao carregar logotipo: {str(e)}")
+            # Se não puder carregar a imagem, apenas mostra o título
+            ttk.Label(
+                self.main_frame,
+                text="AUSTRAL",
+                style='Title.TLabel'
+            ).pack(pady=25)
 
         # Frame do formulário
         form_frame = ttk.Frame(self.main_frame)
@@ -209,12 +230,33 @@ class LoginWindow:
             self.root.clipboard_append(value)
             messagebox.showinfo("Copiado!", "Valor copiado para a área de transferência.")
 
+    def add_placeholder(self, entry, placeholder_text):
+        entry.insert(0, placeholder_text)
+        entry.bind("<FocusIn>", lambda event: self.clear_placeholder(event, placeholder_text))
+        entry.bind("<FocusOut>", lambda event: self.add_placeholder_text(event, placeholder_text))
+    
+    def clear_placeholder(self, event, placeholder_text):
+        if event.widget.get() == placeholder_text:
+            event.widget.delete(0, tk.END)
+    
+    def add_placeholder_text(self, event, placeholder_text):
+        if not event.widget.get():
+            event.widget.insert(0, placeholder_text)
+    
+    def toggle_password_visibility(self):
+        if self.password_entry.cget('show') == '•':
+            self.password_entry.config(show='')
+            self.show_password_button.config(text='Ocultar')
+        else:
+            self.password_entry.config(show='•')
+            self.show_password_button.config(text='Mostrar')
+
     def create_login_form(self, form_frame):
         """Cria os campos e botões do formulário de login"""
         COLORS = {
             'text_dark': '#1E293B',
             'text_medium': '#475569',
-            'button': '#334155',
+            'button': '#007BFF',
             'error': '#DC2626'
         }
         
@@ -234,6 +276,9 @@ class LoginWindow:
         )
         self.username_entry.pack(pady=(0, 15))
 
+        # Adiciona placeholder
+        self.add_placeholder(self.username_entry, "Digite seu usuário")
+
         # Senha
         ttk.Label(
             form_frame,
@@ -249,7 +294,38 @@ class LoginWindow:
             font=FONT_ENTRY,
             style='Custom.TEntry'
         )
-        self.password_entry.pack(pady=(0, 20))
+        self.password_entry.pack(pady=(0, 5))
+
+        # Adiciona placeholder
+        self.add_placeholder(self.password_entry, "Digite sua senha")
+
+        # Botão para mostrar/ocultar senha
+        self.show_password_button = ttk.Button(
+            form_frame,
+            text="Mostrar",
+            command=self.toggle_password_visibility,
+            style='Custom.TButton'
+        )
+        self.show_password_button.pack(pady=(5, 15))
+
+        # "Lembrar-me" checkbox
+        self.remember_var = tk.BooleanVar()
+        remember_check = ttk.Checkbutton(
+            form_frame,
+            text="Lembrar-me",
+            variable=self.remember_var
+        )
+        remember_check.pack(pady=5)
+
+        # "Esqueceu a senha?" link
+        forgot_password_link = ttk.Label(
+            form_frame,
+            text="Esqueceu a senha?",
+            foreground="blue",
+            cursor="hand2"
+        )
+        forgot_password_link.pack()
+        forgot_password_link.bind("<Button-1>", lambda e: messagebox.showinfo("Recuperação de Senha", "Funcionalidade em desenvolvimento."))
 
         # Botão de login com estilo personalizado
         login_button = ttk.Button(
@@ -259,11 +335,6 @@ class LoginWindow:
             width=20,
             style='Custom.TButton'
         )
-        style = ttk.Style()
-        style.configure('Custom.TButton',
-                       background=COLORS['button'],
-                       foreground='white',
-                       font=('Helvetica', 10, 'bold'))
         login_button.pack(pady=10)
 
         # Label de erro
@@ -322,6 +393,12 @@ class LoginWindow:
         """Valida as credenciais de login do usuário"""
         username = self.username_entry.get()
         password = self.password_entry.get()
+
+        # Remove placeholders se presentes
+        if username == "Digite seu usuário":
+            username = ""
+        if password == "Digite sua senha":
+            password = ""
 
         if not username or not password:
             self.error_label.config(text="POR FAVOR, PREENCHA TODOS OS CAMPOS")

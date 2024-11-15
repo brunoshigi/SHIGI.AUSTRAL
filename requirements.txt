@@ -1,7 +1,30 @@
+# Interface gráfica
 ttkbootstrap==1.10.1
+
+# Manipulação de imagens
 Pillow==10.0.0
+
+# Manipulação de dados
 pandas==2.0.3
+
+# Suporte a Excel
 openpyxl==3.1.2
+
+# Requisições HTTP (para consulta de CEP)
 requests==2.31.0
+
+# Formatação de números
 babel==2.13.1
+
+# Criação do executável
 pyinstaller==6.1.0
+
+# Bibliotecas extras que podem ser necessárias
+# numpy
+# python-dateutil
+# pytz
+# six
+# urllib3
+# certifi
+# charset-normalizer
+# idna

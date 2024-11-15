@@ -11,34 +11,42 @@ from utils import FONT_LABEL, FONT_ENTRY, FONT_TITLE
 from lojas import lojas, estoque, matriz, servicos
 from utils import setup_window_icon
 from utils import UIHelper
+from resource_manager import resource_manager
+
 
 
 import sys
 from pathlib import Path
 
 def get_resource_path(filename: str) -> str:
-    """Retorna o caminho para um recurso"""
+    """
+    Retorna o caminho correto para um recurso, seja em desenvolvimento ou no executável
+    """
     try:
         # Se estiver rodando como executável PyInstaller
         if getattr(sys, '_MEIPASS', False):
             return os.path.join(sys._MEIPASS, 'assets', filename)
         
         # Se estiver rodando como script
-        base_path = Path(__file__).parent
-        resource_path = base_path / 'assets' / filename
+        base_path = Path(__file__).resolve().parent
         
-        if resource_path.exists():
-            return str(resource_path)
-            
-        # Tenta um nível acima
-        resource_path = base_path.parent / 'assets' / filename
-        if resource_path.exists():
-            return str(resource_path)
-            
-        return None
+        # Procura em possíveis localizações
+        possible_paths = [
+            base_path / 'assets' / filename,           # ./assets/file
+            base_path / filename,                      # ./file
+            base_path.parent / 'assets' / filename,    # ../assets/file
+            base_path.parent / filename                # ../file
+        ]
         
+        # Retorna o primeiro caminho válido
+        for path in possible_paths:
+            if path.exists():
+                return str(path)
+                
+        # Se não encontrou, procura na pasta do executável
+        if hasattr(sys, 'frozen'):
+            return os.path.join(sys._MEIPASS, 'assets', filename)
     except Exception as e:
-        print(f"Erro ao localizar recurso {filename}: {e}")
         return None
 
 class EtiquetaTransferenciaApp:

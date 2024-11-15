@@ -1,71 +1,62 @@
+import PyInstaller.__main__
 import os
-import sys
 from pathlib import Path
-import shutil
 
-class ResourceManager:
-    def __init__(self):
-        # Define o diretório base baseado se é executável ou script
-        if getattr(sys, 'frozen', False):
-            self.base_path = Path(sys._MEIPASS)
-        else:
-            self.base_path = Path(__file__).parent.parent
+def create_executable():
+    """
+    Cria o executável do sistema Austral
+    """
+    # Diretório base do projeto
+    base_dir = Path(__file__).parent
+    
+    # Nome do arquivo principal
+    main_script = base_dir / 'main.py'
+    
+    # Diretório de recursos
+    resource_dir = base_dir / 'assets'
+    resource_dir.mkdir(exist_ok=True)
+    
+    # Arquivos de recursos e suas pastas destino
+    resources = [
+        (resource_dir / 'logo_nome.png', 'assets'),
+        (resource_dir / 'icone.ico', 'assets')
+    ]
+    
+    # Lista de dados adicionais formatada conforme o sistema operacional
+    if os.name == 'nt':  # Windows
+        datas = [f"{str(f[0])};{f[1]}" for f in resources]
+    else:  # Linux/Mac
+        datas = [f"{str(f[0])}:{f[1]}" for f in resources]
+    
+    # Dependências ocultas que precisam ser incluídas
+    hidden_imports = [
+        'ttkbootstrap',
+        'PIL',
+        'PIL._tkinter_finder',
+        'sqlite3',
+        'pandas',
+        'openpyxl',
+        'requests',
+        'babel.numbers'
+    ]
+    
+    # Configurações do PyInstaller
+    PyInstaller.__main__.run([
+        str(main_script),
+        '--name=Austral',
+        '--onefile',
+        '--windowed',
+        f'--icon={resource_dir}/icone.ico',
+        '--clean',
+        '--noconsole',
+        *[f'--add-data={data}' for data in datas],
+        *[f'--hidden-import={imp}' for imp in hidden_imports],
+        '--uac-admin',  # Solicita elevação de privilégios no Windows
+        '--collect-all=ttkbootstrap',
+        '--collect-all=babel',
+        '--copy-metadata=ttkbootstrap',
+        '--noupx'
+    ])
 
-        # Define os diretórios principais
-        self.assets_dir = self.base_path / 'assets'
-        self.data_dir = self.base_path / 'data'
-        self.logs_dir = self.base_path / 'logs'
-        self.temp_dir = self.base_path / 'temp'
-
-        # Cria os diretórios necessários
-        self.ensure_directories()
-
-    def ensure_directories(self):
-        """Garante que todos os diretórios necessários existam"""
-        dirs = [
-            self.assets_dir,
-            self.data_dir,
-            self.logs_dir,
-            self.temp_dir
-        ]
-        
-        for dir_path in dirs:
-            dir_path.mkdir(parents=True, exist_ok=True)
-
-    def get_resource_path(self, resource_name: str) -> Path:
-        """
-        Retorna o caminho absoluto para um recurso
-        """
-        if getattr(sys, 'frozen', False):
-            # Se for executável, procura no diretório temporário do PyInstaller
-            resource_path = self.base_path / 'assets' / resource_name
-        else:
-            # Se for script, procura no diretório do projeto
-            resource_path = self.assets_dir / resource_name
-
-        if not resource_path.exists():
-            raise FileNotFoundError(f"Recurso não encontrado: {resource_name}")
-
-        return resource_path
-
-    def get_data_path(self) -> Path:
-        """Retorna o caminho para o diretório de dados"""
-        return self.data_dir
-
-    def get_logs_path(self) -> Path:
-        """Retorna o caminho para o diretório de logs"""
-        return self.logs_dir
-
-    def get_temp_path(self) -> Path:
-        """Retorna o caminho para o diretório temporário"""
-        return self.temp_dir
-
-    def cleanup_temp(self, max_age_days: int = 7):
-        """Limpa arquivos temporários mais antigos que max_age_days"""
-        now = Path.ctime(Path())
-        for file in self.temp_dir.glob('*'):
-            if (now - Path.ctime(file)).days > max_age_days:
-                file.unlink()
-
-# Instância global do gerenciador de recursos
-resource_manager = ResourceManager()
+if __name__ == "__main__":
+    create_executable()
