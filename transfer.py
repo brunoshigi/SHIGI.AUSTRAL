@@ -13,6 +13,34 @@ from utils import setup_window_icon
 from utils import UIHelper
 
 
+import sys
+from pathlib import Path
+
+def get_resource_path(filename: str) -> str:
+    """Retorna o caminho para um recurso"""
+    try:
+        # Se estiver rodando como executável PyInstaller
+        if getattr(sys, '_MEIPASS', False):
+            return os.path.join(sys._MEIPASS, 'assets', filename)
+        
+        # Se estiver rodando como script
+        base_path = Path(__file__).parent
+        resource_path = base_path / 'assets' / filename
+        
+        if resource_path.exists():
+            return str(resource_path)
+            
+        # Tenta um nível acima
+        resource_path = base_path.parent / 'assets' / filename
+        if resource_path.exists():
+            return str(resource_path)
+            
+        return None
+        
+    except Exception as e:
+        print(f"Erro ao localizar recurso {filename}: {e}")
+        return None
+
 class EtiquetaTransferenciaApp:
     def __init__(self, root):
         self.root = root   
@@ -155,7 +183,9 @@ class EtiquetaTransferenciaApp:
 
             # Logo Austral
             try:
-                logo = Image.open("logo_nome.png")
+                logo_path = get_resource_path("logo_nome.png")
+                if logo_path:
+                    logo = Image.open(logo_path)
                 # Redimensiona o logo para um tamanho adequado
                 logo_width = 200
                 ratio = logo.size[1] / logo.size[0]

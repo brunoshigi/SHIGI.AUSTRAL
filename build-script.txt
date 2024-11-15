@@ -1,0 +1,24 @@
+@echo off
+echo Iniciando build do Sistema Austral...
+echo.
+
+echo Verificando ambiente virtual...
+if not exist "venv" (
+    echo Criando ambiente virtual...
+    python -m venv venv
+)
+
+echo Ativando ambiente virtual...
+call venv\Scripts\activate
+
+echo Instalando dependências...
+pip install -r requirements.txt
+
+echo Criando executável...
+python setup.py
+
+echo.
+echo Build concluído! O executável está na pasta dist/
+echo.
+echo Pressione qualquer tecla para sair...
+pause > nul
