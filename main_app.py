@@ -130,8 +130,8 @@ class AustralApp:
         # Cria botões com estilo personalizado
         style = ttk.Style()
         style.configure('Function.TButton',
-                        font=('Helvetica', 12, 'bold'),
-                        width=30)
+                        font=('Helvetica', 10, 'bold'),
+                        width=33) 
 
         for func in functions:
             button = ttk.Button(

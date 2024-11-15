@@ -15,12 +15,15 @@ from logger import AustralLogger, log_action
 from utils import FONT_LABEL, FONT_ENTRY, setup_window_icon
 from utils import UIHelper
 from PIL import Image, ImageTk  # Importar para manipulação de imagens
+from ttkbootstrap import Window
+import webbrowser
+
 
 class LoginWindow:
     def __init__(self, root: tk.Tk, on_login_success: Callable):
         self.root = root
         self.root.title("AUSTRAL - LOGIN")
-        self.root.geometry("400x600")
+        self.root.geometry("400x580")
         self.config = ConfigManager()
         self.logger = AustralLogger()
         self.on_login_success = on_login_success
@@ -28,7 +31,7 @@ class LoginWindow:
         setup_window_icon(self.root)
         self.setup_ui()
         self.init_database()
-        self.center_window(400, 600)
+        self.center_window(400, 580)
         
         # Inicia a thread de atualização das cotações
         self.update_thread = threading.Thread(target=self.update_currency_loop, daemon=True)
@@ -123,7 +126,7 @@ class LoginWindow:
         # Logo e título
         # Carrega a imagem do logotipo
         try:
-            logo_image = Image.open("assets/logo_nome.png")
+            logo_image = Image.open("logo.png")
             logo_image = logo_image.resize((150, 150), Image.ANTIALIAS)
             logo_photo = ImageTk.PhotoImage(logo_image)
             logo_label = ttk.Label(self.main_frame, image=logo_photo)
@@ -175,11 +178,9 @@ class LoginWindow:
             usd_value_frame,
             text="carregando...",
             style='Currency.TLabel',
-            cursor="hand2",
             width=12
         )
         self.usd_label.pack(padx=10, pady=5)
-        self.usd_label.bind('<Button-1>', lambda e: self.copy_value(self.usd_label.cget("text")))
         
         # Frame para EUR
         eur_frame = ttk.Frame(currency_container)
@@ -199,11 +200,9 @@ class LoginWindow:
             eur_value_frame,
             text="carregando...",
             style='Currency.TLabel',
-            cursor="hand2",
             width=12
         )
         self.eur_label.pack(padx=10, pady=5)
-        self.eur_label.bind('<Button-1>', lambda e: self.copy_value(self.eur_label.cget("text")))
         
         # Label para última atualização
         self.update_label = ttk.Label(
@@ -221,14 +220,7 @@ class LoginWindow:
             font=('Helvetica', 7),
             foreground=COLORS['text_medium']
         )
-        watermark.pack(side=tk.BOTTOM, anchor=tk.SE, padx=10, pady=10)
-
-    def copy_value(self, value):
-        """Copia o valor da cotação para a área de transferência"""
-        if value != "carregando..." and value != "erro":
-            self.root.clipboard_clear()
-            self.root.clipboard_append(value)
-            messagebox.showinfo("Copiado!", "Valor copiado para a área de transferência.")
+        watermark.pack(side=tk.BOTTOM, anchor=tk.SE, padx=20, pady=20) # Ajusta a posição da marca d'água no rodapé da janela principal
 
     def add_placeholder(self, entry, placeholder_text):
         entry.insert(0, placeholder_text)
@@ -325,7 +317,8 @@ class LoginWindow:
             cursor="hand2"
         )
         forgot_password_link.pack()
-        forgot_password_link.bind("<Button-1>", lambda e: messagebox.showinfo("Recuperação de Senha", "Funcionalidade em desenvolvimento."))
+        forgot_password_link.bind("<Button-1>", lambda e: self.redirect_to_whatsapp())         
+
 
         # Botão de login com estilo personalizado
         login_button = ttk.Button(
@@ -449,6 +442,10 @@ class LoginWindow:
             self.error_label.config(text="ERRO AO ACESSAR BANCO DE DADOS")
         finally:
             conn.close()
+
+    def redirect_to_whatsapp(self):
+        """Redireciona para o WhatsApp para recuperação de senha"""
+        webbrowser.open("https://wa.me/5511983988868")
 
 
 if __name__ == "__main__":
