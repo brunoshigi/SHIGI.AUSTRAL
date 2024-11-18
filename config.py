@@ -253,6 +253,10 @@ class ConfigManager:
             from sinoms import PedidoSinOMSApp
             PedidoSinOMSApp.setup_database_static(self)
 
+            # Configuração do banco de dados para UserManager
+            from user_manager import UserManager
+            UserManager.setup_database_static(self)
+
             # Adicione chamadas para outros módulos, se necessário
 
         except Exception as e:

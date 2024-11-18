@@ -10,6 +10,31 @@ class UserManager:
         self.logger = AustralLogger()
         self.db_path = self.config.get('database.path')
 
+    @staticmethod
+    def setup_database_static(config):
+        """Configura a tabela de usuários no banco de dados."""
+        try:
+            db_path = config.get('database.path', 'austral.db')
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            # Criação da tabela 'users'
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT UNIQUE,
+                    password TEXT,
+                    role TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    last_login TIMESTAMP
+                )
+            ''')
+            conn.commit()
+        except Exception as e:
+            print(f"Erro ao configurar o banco de dados de usuários: {str(e)}")
+        finally:
+            if 'conn' in locals():
+                conn.close()
+
     def create_user(self, username: str, password: str, role: str = 'user'):
         """Cria um novo usuário"""
         try:
