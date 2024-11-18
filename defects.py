@@ -90,6 +90,41 @@ class DefectManagerApp:
             if 'conn' in locals():
                 conn.close()
 
+    @staticmethod
+    def setup_database_static(config):
+        """Método estático para configurar o banco de dados sem instanciar a classe."""
+        try:
+            db_path = config.get('database.path', 'austral.db')
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+
+            # Criação da tabela 'defeitos'
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS defeitos (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    tipo_defeito TEXT,
+                    codigo_produto TEXT,
+                    descricao TEXT,
+                    cor TEXT,
+                    tamanho TEXT,
+                    nome_cliente TEXT,
+                    nome_vendedor TEXT,
+                    data_defeito TEXT,
+                    descricao_defeito TEXT,
+                    observacoes TEXT,
+                    loja TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            conn.commit()
+        except Exception as e:
+            # ... tratamento de erro existente ...
+            pass
+        finally:
+            if 'conn' in locals():
+                conn.close()
+
     def setup_ui(self):
         """Configura a interface do usuário"""
         # Configuração do grid principal

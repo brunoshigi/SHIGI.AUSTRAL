@@ -23,6 +23,34 @@ class PedidoSinOMSApp:
         self.carregar_dados()
         self.center_window()
 
+    @staticmethod
+    def setup_database_static(config):
+        """Método estático para configurar o banco de dados sem instanciar a classe."""
+        try:
+            db_path = config.get('database.path', 'austral.db')
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+
+            # Criação da tabela 'pedidos'
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS pedidos (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    data_faturamento TEXT,
+                    responsavel_faturamento TEXT,
+                    numero_pedido TEXT UNIQUE,
+                    status TEXT DEFAULT 'Faturado',
+                    data_envio TEXT,
+                    responsavel_envio TEXT
+                )
+            ''')
+            conn.commit()
+        except Exception as e:
+            # ... tratamento de erro existente ...
+            pass
+        finally:
+            if 'conn' in locals():
+                conn.close()
+
     def center_window(self):
         """Centraliza a janela principal no ecrã."""
         self.root.update_idletasks()

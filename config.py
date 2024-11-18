@@ -242,6 +242,23 @@ class ConfigManager:
     def get_theme_config(self) -> ThemeConfig:
         return ThemeConfig(**self.config['theme'])
 
+    def setup_all_databases(self):
+        """Configura todos os bancos de dados e tabelas necessárias."""
+        try:
+            # Configuração do banco de dados para DefectManagerApp
+            from defects import DefectManagerApp
+            DefectManagerApp.setup_database_static(self)
+
+            # Configuração do banco de dados para PedidoSinOMSApp
+            from sinoms import PedidoSinOMSApp
+            PedidoSinOMSApp.setup_database_static(self)
+
+            # Adicione chamadas para outros módulos, se necessário
+
+        except Exception as e:
+            self.logger.error(f"Erro ao configurar bancos de dados: {e}")
+            raise ConfigurationError(f"Erro ao configurar bancos de dados: {e}")
+
     def __str__(self) -> str:
         return json.dumps(self.config, indent=2)
 
