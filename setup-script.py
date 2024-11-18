@@ -18,7 +18,7 @@ def create_executable():
     
     # Arquivos de recursos e suas pastas destino
     resources = [
-        (resource_dir / 'logo_nome.png', 'assets'),
+        (resource_dir / 'logo.png', 'assets'),
         (resource_dir / 'icone.ico', 'assets')
     ]
     
@@ -55,7 +55,10 @@ def create_executable():
         '--collect-all=ttkbootstrap',
         '--collect-all=babel',
         '--copy-metadata=ttkbootstrap',
-        '--noupx'
+        '--noupx',
+        '--exclude-module=PyQt5',
+        '--exclude-module=PyQt6'
+
     ])
 
 if __name__ == "__main__":

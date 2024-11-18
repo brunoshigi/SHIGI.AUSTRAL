@@ -74,30 +74,30 @@ class LoginWindow:
     def setup_ui(self):
         """Configura a interface gráfica de login"""
         style = ttk.Style()
-        style.configure('Custom.TEntry', padding=10)
+        style.configure('Custom.TEntry', padding=9)
         
         # Cores personalizadas mais sofisticadas
         COLORS = {
-            'background': '#FFFFFF',
-            'card_bg': '#F8F9FA',
-            'text_dark': '#1E293B',
-            'text_medium': '#475569',
-            'value_color': '#334155',
-            'accent': '#334155',
-            'border': '#E2E8F0',
+            'background': '#FFFFFF', # Branco
+            'card_bg': '#F8F9FA', # Cinza claro
+            'text_dark': '#1E293B', # Azul escuro
+            'text_medium': '#475569',  # Cinza escuro  
+            'value_color': '#334155',  # Azul escuro
+            'accent': '#334155',   # Azul escuro
+            'border': '#E2E8F0', # Cinza claro
             'button': '#007BFF',  # Botão azul padrão
-            'error': '#DC2626'
+            'error': '#DC2626'  # Vermelho
         }
         
         # Configurações de estilo para os displays de cotação
         style.configure('Currency.TLabel', 
-                       font=('Helvetica', 12, 'bold'),
+                       font=('Helvetica', 10, 'bold'),
                        padding=5,
                        background=COLORS['card_bg'],
                        foreground=COLORS['value_color'])
         
         style.configure('CurrencySymbol.TLabel',
-                       font=('Helvetica', 14, 'bold'),
+                       font=('Helvetica', 10, 'bold'),
                        foreground=COLORS['accent'])
                        
         style.configure('Currency.TFrame',
@@ -106,27 +106,27 @@ class LoginWindow:
                        borderwidth=1)
         
         style.configure('Title.TLabel',
-                       font=('Helvetica', 32, 'bold'),
-                       foreground=COLORS['text_dark'])
+                       font=('Helvetica', 28, 'bold'),
+                       foreground=COLORS['accent'])
                        
         style.configure('Header.TLabel',
-                       font=('Helvetica', 10, 'bold'),
+                       font=('Helvetica', 8, 'bold'),
                        foreground=COLORS['text_medium'])
         
         # Estilo para botões personalizados
         style.configure('Custom.TButton',
-                        font=('Helvetica', 12, 'bold'),
+                        font=('Helvetica', 10, 'bold'),
                         foreground='white',
                         background=COLORS['button'],
                         borderwidth=0)
         
-        self.main_frame = ttk.Frame(self.root, padding="20")
+        self.main_frame = ttk.Frame(self.root, padding="18")
         self.main_frame.pack(fill=tk.BOTH, expand=True)
 
         # Logo e título
         # Carrega a imagem do logotipo
         try:
-            logo_image = Image.open("logo.png")
+            logo_image = Image.open("assets/logo.png")
             logo_image = logo_image.resize((150, 150), Image.ANTIALIAS)
             logo_photo = ImageTk.PhotoImage(logo_image)
             logo_label = ttk.Label(self.main_frame, image=logo_photo)
@@ -139,16 +139,16 @@ class LoginWindow:
                 self.main_frame,
                 text="AUSTRAL",
                 style='Title.TLabel'
-            ).pack(pady=25)
+            ).pack(pady=23)
 
         # Frame do formulário
         form_frame = ttk.Frame(self.main_frame)
-        form_frame.pack(fill=tk.BOTH, expand=True, padx=30)
+        form_frame.pack(fill=tk.BOTH, expand=True, padx=26)
         self.create_login_form(form_frame)
         
         # Frame para as cotações com título
         quotes_title_frame = ttk.Frame(self.main_frame)
-        quotes_title_frame.pack(fill=tk.X, padx=10, pady=(7, 5))
+        quotes_title_frame.pack(fill=tk.X, padx=8, pady=(7, 5))
         
         ttk.Label(
             quotes_title_frame,
@@ -158,7 +158,7 @@ class LoginWindow:
         
         # Container para os cards de cotação
         currency_container = ttk.Frame(self.main_frame)
-        currency_container.pack(fill=tk.X, padx=25)
+        currency_container.pack(fill=tk.X, padx=23)
         
         # Frame para USD
         usd_frame = ttk.Frame(currency_container)
@@ -180,7 +180,7 @@ class LoginWindow:
             style='Currency.TLabel',
             width=12
         )
-        self.usd_label.pack(padx=10, pady=5)
+        self.usd_label.pack(padx=9, pady=4)
         
         # Frame para EUR
         eur_frame = ttk.Frame(currency_container)
@@ -200,9 +200,9 @@ class LoginWindow:
             eur_value_frame,
             text="carregando...",
             style='Currency.TLabel',
-            width=12
+            width=10
         )
-        self.eur_label.pack(padx=10, pady=5)
+        self.eur_label.pack(padx=8, pady=5)
         
         # Label para última atualização
         self.update_label = ttk.Label(
@@ -211,7 +211,7 @@ class LoginWindow:
             font=('Helvetica', 8),
             foreground=COLORS['text_medium']
         )
-        self.update_label.pack(pady=(8, 0))
+        self.update_label.pack(pady=(6, 0))
         
         # Marca d'água no canto inferior direito
         watermark = ttk.Label(
@@ -220,7 +220,7 @@ class LoginWindow:
             font=('Helvetica', 7),
             foreground=COLORS['text_medium']
         )
-        watermark.pack(side=tk.BOTTOM, anchor=tk.SE, padx=20, pady=20) # Ajusta a posição da marca d'água no rodapé da janela principal
+        watermark.pack(side=tk.BOTTOM, anchor=tk.SE, padx=10, pady=10) # Ajusta a posição da marca d'água no rodapé da janela principal
 
     def add_placeholder(self, entry, placeholder_text):
         entry.insert(0, placeholder_text)
@@ -238,10 +238,10 @@ class LoginWindow:
     def toggle_password_visibility(self):
         if self.password_entry.cget('show') == '•':
             self.password_entry.config(show='')
-            self.show_password_button.config(text='Ocultar')
+            self.show_password_button.config(text='OCULTAR')
         else:
             self.password_entry.config(show='•')
-            self.show_password_button.config(text='Mostrar')
+            self.show_password_button.config(text='MOSTRAR')
 
     def create_login_form(self, form_frame):
         """Cria os campos e botões do formulário de login"""
@@ -258,15 +258,15 @@ class LoginWindow:
             text="USUÁRIO:",
             font=FONT_LABEL,
             foreground=COLORS['text_medium']
-        ).pack(anchor=tk.W, pady=(0, 5))
+        ).pack(anchor=tk.W, pady=(0, 4))
         
         self.username_entry = ttk.Entry(
             form_frame,
-            width=40,
+            width=38,
             font=FONT_ENTRY,
             style='Custom.TEntry'
         )
-        self.username_entry.pack(pady=(0, 15))
+        self.username_entry.pack(pady=(0, 13))
 
         # Adiciona placeholder
         self.add_placeholder(self.username_entry, "Digite seu usuário")
@@ -277,16 +277,16 @@ class LoginWindow:
             text="SENHA:",
             font=FONT_LABEL,
             foreground=COLORS['text_medium']
-        ).pack(anchor=tk.W, pady=(0, 5))
+        ).pack(anchor=tk.W, pady=(0, 4))
         
         self.password_entry = ttk.Entry(
             form_frame,
-            width=40,
+            width=38,
             show="•",
             font=FONT_ENTRY,
             style='Custom.TEntry'
         )
-        self.password_entry.pack(pady=(0, 5))
+        self.password_entry.pack(pady=(0, 4))
 
         # Adiciona placeholder
         self.add_placeholder(self.password_entry, "Digite sua senha")
@@ -298,7 +298,7 @@ class LoginWindow:
             command=self.toggle_password_visibility,
             style='Custom.TButton'
         )
-        self.show_password_button.pack(pady=(5, 15))
+        self.show_password_button.pack(pady=(4, 13))
 
         # "Lembrar-me" checkbox
         self.remember_var = tk.BooleanVar()
@@ -313,7 +313,7 @@ class LoginWindow:
         forgot_password_link = ttk.Label(
             form_frame,
             text="Esqueceu a senha?",
-            foreground="blue",
+            foreground="red",
             cursor="hand2"
         )
         forgot_password_link.pack()
@@ -325,7 +325,7 @@ class LoginWindow:
             form_frame,
             text="ENTRAR",
             command=self.validate_login,
-            width=20,
+            width=28,
             style='Custom.TButton'
         )
         login_button.pack(pady=10)

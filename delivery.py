@@ -187,7 +187,7 @@ class EtiquetaClientesApp:
 
         # Adicionar o logo Austral
         try:
-            logo_path = get_resource_path("logo_nome.png")
+            logo_path = get_resource_path("assets/logo.png")
             if logo_path:
                 logo = Image.open(logo_path)
                 logo_width = 275 # é o tamanho do logo em pixels (largura), que foi ajustado para caber na etiqueta
