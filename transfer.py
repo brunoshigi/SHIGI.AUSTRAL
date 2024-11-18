@@ -19,34 +19,19 @@ import sys
 from pathlib import Path
 
 def get_resource_path(filename: str) -> str:
-    """
-    Retorna o caminho correto para um recurso, seja em desenvolvimento ou no executável
-    """
+    # Busca o recurso diretamente na raiz
     try:
-        # Se estiver rodando como executável PyInstaller
-        if getattr(sys, '_MEIPASS', False):
-            return os.path.join(sys._MEIPASS, 'assets', filename)
+        if getattr(sys, '_MEIPASS', False):  # Executável PyInstaller
+            return os.path.join(sys._MEIPASS, filename)
         
-        # Se estiver rodando como script
         base_path = Path(__file__).resolve().parent
-        
-        # Procura em possíveis localizações
-        possible_paths = [
-            base_path / 'assets' / filename,           # ./assets/file
-            base_path / filename,                      # ./file
-            base_path.parent / 'assets' / filename,    # ../assets/file
-            base_path.parent / filename                # ../file
-        ]
-        
-        # Retorna o primeiro caminho válido
-        for path in possible_paths:
-            if path.exists():
-                return str(path)
-                
-        # Se não encontrou, procura na pasta do executável
-        if hasattr(sys, 'frozen'):
-            return os.path.join(sys._MEIPASS, 'assets', filename)
+        resource_path = base_path / filename
+
+        if resource_path.exists():
+            return str(resource_path)
+        raise FileNotFoundError(f"Recurso não encontrado: {filename}")
     except Exception as e:
+        print(f"Erro ao localizar recurso {filename}: {e}")
         return None
 
 class EtiquetaTransferenciaApp:
@@ -191,7 +176,7 @@ class EtiquetaTransferenciaApp:
 
             # Logo Austral
             try:
-                logo_path = get_resource_path("logo_nome.png")
+                logo_path = get_resource_path("logo.png")
                 if logo_path:
                     logo = Image.open(logo_path)
                 # Redimensiona o logo para um tamanho adequado

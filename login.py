@@ -102,7 +102,7 @@ class LoginWindow:
         # Logo e título
         # Carrega a imagem do logotipo usando o ResourceManager
         try:
-            logo_path = self.resource_manager.get_resource_path('assets', 'logo.png')
+            logo_path = self.resource_manager.get_resource_path('logo.png')  # Caminho na raiz
             logo_image = Image.open(logo_path)
             logo_image = logo_image.resize((100, 100), Image.ANTIALIAS)
             logo_photo = ImageTk.PhotoImage(logo_image)

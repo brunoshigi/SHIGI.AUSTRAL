@@ -1,71 +1,60 @@
 import os
-import sys
 from pathlib import Path
-import shutil
+import tkinter as tk
 
 class ResourceManager:
     def __init__(self):
-        # Define o diretório base baseado se é executável ou script
-        if getattr(sys, 'frozen', False):
-            self.base_path = Path(sys._MEIPASS)
-        else:
-            self.base_path = Path(__file__).parent.parent
+        # Define o diretório base como a raiz do projeto
+        self.base_path = Path(__file__).parent
 
-        # Define os diretórios principais
-        self.assets_dir = self.base_path / 'assets'
-        self.data_dir = self.base_path / 'data'
-        self.logs_dir = self.base_path / 'logs'
-        self.temp_dir = self.base_path / 'temp'
-
-        # Cria os diretórios necessários
-        self.ensure_directories()
-
-    def ensure_directories(self):
-        """Garante que todos os diretórios necessários existam"""
-        dirs = [
-            self.assets_dir,
-            self.data_dir,
-            self.logs_dir,
-            self.temp_dir
-        ]
-        
-        for dir_path in dirs:
-            dir_path.mkdir(parents=True, exist_ok=True)
-
-    def get_resource_path(self, resource_name: str) -> Path:
+    def get_resource_path(self, filename: str) -> Path:
         """
-        Retorna o caminho absoluto para um recurso
+        Retorna o caminho absoluto para um recurso na raiz do projeto.
+
+        Args:
+            filename: Nome do arquivo do recurso.
+
+        Returns:
+            Path: Caminho absoluto para o recurso.
         """
-        if getattr(sys, 'frozen', False):
-            # Se for executável, procura no diretório temporário do PyInstaller
-            resource_path = self.base_path / 'assets' / resource_name
-        else:
-            # Se for script, procura no diretório do projeto
-            resource_path = self.assets_dir / resource_name
+        resource_path = self.base_path / filename
 
         if not resource_path.exists():
-            raise FileNotFoundError(f"Recurso não encontrado: {resource_name}")
+            raise FileNotFoundError(f"Recurso não encontrado: {filename}")
 
         return resource_path
 
-    def get_data_path(self) -> Path:
-        """Retorna o caminho para o diretório de dados"""
-        return self.data_dir
+    def setup_window_icon(self, window: tk.Tk) -> None:
+        """
+        Configura o ícone da janela principal.
 
-    def get_logs_path(self) -> Path:
-        """Retorna o caminho para o diretório de logs"""
-        return self.logs_dir
+        Args:
+            window: Instância da janela tkinter.
+        """
+        try:
+            icon_path = self.get_resource_path('icone.ico')  # Ícone na raiz do projeto
+            if os.name == 'nt':  # Windows
+                window.iconbitmap(default=str(icon_path))
+            else:  # Linux/Mac
+                icon = tk.PhotoImage(file=str(icon_path))
+                window.iconphoto(True, icon)
+        except Exception as e:
+            print(f"Erro ao configurar ícone: {e}")
 
-    def get_temp_path(self) -> Path:
-        """Retorna o caminho para o diretório temporário"""
-        return self.temp_dir
+    def cleanup_temp(self, temp_dir: str, max_age_days: int = 7) -> None:
+        """
+        Limpa arquivos temporários mais antigos que max_age_days.
 
-    def cleanup_temp(self, max_age_days: int = 7):
-        """Limpa arquivos temporários mais antigos que max_age_days"""
-        now = Path.ctime(Path())
-        for file in self.temp_dir.glob('*'):
-            if (now - Path.ctime(file)).days > max_age_days:
+        Args:
+            temp_dir: Caminho para o diretório temporário.
+            max_age_days: Tempo máximo permitido, em dias.
+        """
+        temp_path = Path(temp_dir)
+        cutoff_time = (Path.cwd().stat().st_ctime - (max_age_days * 86400))
+        for file in temp_path.iterdir():
+            if file.stat().st_ctime < cutoff_time:
                 file.unlink()
+
 
 # Instância global do gerenciador de recursos
 resource_manager = ResourceManager()

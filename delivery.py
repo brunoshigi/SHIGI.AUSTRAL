@@ -19,33 +19,23 @@ from pathlib import Path
 
 def get_resource_path(filename: str) -> str:
     """
-    Retorna o caminho correto para um recurso, seja em desenvolvimento ou no executável
+    Retorna o caminho correto para um recurso na raiz do projeto
     """
     try:
-        # Se estiver rodando como executável PyInstaller
+        # Verifica se está rodando em um executável criado com PyInstaller
         if getattr(sys, '_MEIPASS', False):
-            return os.path.join(sys._MEIPASS, 'assets', filename)
-        
-        # Se estiver rodando como script
+            return os.path.join(sys._MEIPASS, filename)  # Acessa diretamente na raiz
+
+        # Caso contrário, busca o recurso na raiz do projeto
         base_path = Path(__file__).resolve().parent
-        
-        # Procura em possíveis localizações
-        possible_paths = [
-            base_path / 'assets' / filename,           # ./assets/file
-            base_path / filename,                      # ./file
-            base_path.parent / 'assets' / filename,    # ../assets/file
-            base_path.parent / filename                # ../file
-        ]
-        
-        # Retorna o primeiro caminho válido
-        for path in possible_paths:
-            if path.exists():
-                return str(path)
-                
-        # Se não encontrou, procura na pasta do executável
-        if hasattr(sys, 'frozen'):
-            return os.path.join(sys._MEIPASS, 'assets', filename)
+        resource_path = base_path / filename
+
+        if resource_path.exists():
+            return str(resource_path)
+
+        raise FileNotFoundError(f"Recurso não encontrado: {filename}")
     except Exception as e:
+        print(f"Erro ao localizar recurso {filename}: {e}")
         return None
 
 
@@ -187,7 +177,7 @@ class EtiquetaClientesApp:
 
         # Adicionar o logo Austral
         try:
-            logo_path = get_resource_path("assets/logo.png")
+            logo_path = get_resource_path("logo.png")  # Caminho direto na raiz
             if logo_path:
                 logo = Image.open(logo_path)
                 logo_width = 275 # é o tamanho do logo em pixels (largura), que foi ajustado para caber na etiqueta

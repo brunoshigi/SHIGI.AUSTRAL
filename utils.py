@@ -88,7 +88,6 @@ class ResourceManager:
     def __init__(self, base_dir: Optional[str] = None):
         self.base_dir = Path(base_dir) if base_dir else Path(__file__).parent
         self.resource_dirs = {
-            'assets': self.base_dir / 'assets',
             'temp': self.base_dir / 'temp',
             'logs': self.base_dir / 'logs',
             'data': self.base_dir / 'data'
@@ -100,29 +99,30 @@ class ResourceManager:
         for dir_path in self.resource_dirs.values():
             dir_path.mkdir(parents=True, exist_ok=True)
 
-    def get_resource_path(self, resource_type: str, filename: str) -> Path:
+    def get_resource_path(self, filename: str) -> Path:
         """
-        Retorna o caminho completo para um recurso
+        Retorna o caminho completo para um recurso na raiz do projeto
         
         Args:
-            resource_type: Tipo do recurso ('assets', 'temp', 'logs', 'data')
             filename: Nome do arquivo
         
         Returns:
             Path: Caminho completo para o recurso
         
         Raises:
-            ValueError: Se o tipo de recurso for inválido
+            FileNotFoundError: Se o recurso não for encontrado
         """
-        if resource_type not in self.resource_dirs:
-            raise ValueError(f"Tipo de recurso inválido: {resource_type}")
+        resource_path = self.base_dir / filename
+
+        if not resource_path.exists():
+            raise FileNotFoundError(f"Recurso não encontrado: {filename}")
         
-        return self.resource_dirs[resource_type] / filename
+        return resource_path
 
     def setup_window_icon(self, window: tk.Tk) -> None:
         """Configura o ícone da janela"""
         try:
-            icon_path = self.get_resource_path('assets', 'icone.ico')
+            icon_path = self.get_resource_path('icone.ico')  # Busca diretamente na raiz
             if icon_path.exists():
                 if os.name == 'nt':  # Windows
                     window.iconbitmap(default=str(icon_path))
@@ -144,7 +144,7 @@ class ResourceManager:
         Returns:
             Path: Caminho do arquivo salvo
         """
-        temp_path = self.get_resource_path('temp', filename)
+        temp_path = self.get_resource_path(f"temp/{filename}")
         with open(temp_path, mode) as f:
             f.write(content)
         return temp_path

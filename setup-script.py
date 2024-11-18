@@ -13,13 +13,8 @@ def create_executable():
     # Nome do arquivo principal
     main_script = base_dir / 'main.py'
     
-    # Diretório de recursos
-    resource_dir = base_dir / 'assets'
-    
-    # Verifica se o diretório de recursos existe
-    if not resource_dir.exists():
-        print(f"Diretório de recursos não encontrado: {resource_dir}")
-        sys.exit(1)
+    # Diretório de recursos (raiz do projeto)
+    resource_dir = base_dir
     
     # Arquivos de recursos e suas pastas destino
     resources = []
@@ -27,7 +22,7 @@ def create_executable():
         for file in files:
             file_path = Path(root) / file
             relative_path = file_path.relative_to(base_dir)
-            resources.append((str(file_path), str(relative_path.parent)))
+            resources.append((str(file_path), '.'))  # Inclui diretamente na raiz
     
     # Inclui outros recursos necessários (exemplo: templates, configurações)
     additional_dirs = ['templates', 'config', 'data']
@@ -38,7 +33,7 @@ def create_executable():
                 for file in files:
                     file_path = Path(root) / file
                     relative_path = file_path.relative_to(base_dir)
-                    resources.append((str(file_path), str(relative_path.parent)))
+                    resources.append((str(file_path), '.'))  # Inclui diretamente na raiz
     
     # Lista de dados adicionais formatada conforme o sistema operacional
     if os.name == 'nt':  # Windows
@@ -68,7 +63,7 @@ def create_executable():
         '--name=Austral',
         '--onefile',
         '--windowed',
-        f'--icon={resource_dir / "icone.ico"}',
+        f'--icon={base_dir / "icone.ico"}',  # Ícone diretamente na raiz
         '--clean',
         '--noconsole',
         *[f'--add-data={data}' for data in datas],
