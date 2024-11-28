@@ -8,7 +8,7 @@ from typing import Callable, List, Dict
 from config import ConfigManager
 from logger import AustralLogger, log_action
 from utils import FONT_TITLE, FONT_LABEL, setup_window_icon
-from PIL import Image, ImageTk  # Importar para manipulação de imagens
+from PIL import Image, ImageTk
 
 # Importação dos módulos
 from mix import MixDiarioApp
@@ -16,7 +16,8 @@ from delivery import EtiquetaClientesApp
 from transfer import EtiquetaTransferenciaApp
 from mail import EmailGeneratorApp
 from defects import DefectManagerApp
-from sinoms import PedidoSinOMSApp 
+from sinoms import PedidoSinOMSApp
+from inventory import InventoryApp  # Nova importação
 
 class AustralApp:
     def __init__(self, root: tk.Tk, username: str, role: str):
@@ -71,11 +72,11 @@ class AustralApp:
         
         # Carrega a imagem do logotipo
         try:
-            logo_image = Image.open("logo.png")  # Substitua pelo caminho correto do seu logotipo
-            logo_image = logo_image.resize((50, 50), Image.ANTIALIAS)
+            logo_image = Imagelogo_image = Image.open("logo.png")
+            logo_image = logo_image.resize((50, 50), Image.LANCZOS)
             logo_photo = ImageTk.PhotoImage(logo_image)
             logo_label = ttk.Label(title_frame, image=logo_photo)
-            logo_label.image = logo_photo  # Mantém a referência
+            logo_label.image = logo_photo
             logo_label.pack(side=tk.LEFT, padx=(0, 10))
         except Exception as e:
             self.logger.logger.error(f"Erro ao carregar logotipo: {str(e)}")
@@ -102,28 +103,32 @@ class AustralApp:
         """Cria os botões de funcionalidades"""
         functions: List[Dict] = [
             {
-            'title': 'REGISTRO VM DIÁRIO',
-            'command': self.open_mix_diario,
+                'title': 'REGISTRO VM DIÁRIO',
+                'command': self.open_mix_diario,
             },
             {
-            'title': 'CONTROLE PEDIDOS SINOMS',
-            'command': self.open_sinoms_control,
+                'title': 'CONTROLE PEDIDOS SINOMS',
+                'command': self.open_sinoms_control,
             },
             {
-            'title': 'PLANILHA DE DEFEITOS',
-            'command': self.open_defect_manager,
+                'title': 'PLANILHA DE DEFEITOS',
+                'command': self.open_defect_manager,
             },
             {
-            'title': 'E-MAIL DE FECHAMENTO',
-            'command': self.open_email_generator,
+                'title': 'E-MAIL DE FECHAMENTO',
+                'command': self.open_email_generator,
             },
             {
-            'title': 'ETIQUETA ENTREGA CLIENTES',
-            'command': self.open_etiquetas_clientes,
+                'title': 'ETIQUETA ENTREGA CLIENTES',
+                'command': self.open_etiquetas_clientes,
             },
             {
-            'title': 'ETIQUETA TRANSFERÊNCIA FILIAIS',
-            'command': self.open_etiquetas_transferencia,
+                'title': 'ETIQUETA TRANSFERÊNCIA FILIAIS',
+                'command': self.open_etiquetas_transferencia,
+            },
+            {
+                'title': 'INVENTÁRIO',
+                'command': self.open_inventory,
             }
         ]
 
@@ -184,6 +189,13 @@ class AustralApp:
         window = ttk.Toplevel(self.root)
         window.title("CONTROLE DE PEDIDOS SINOMS")
         PedidoSinOMSApp(window)
+
+    @log_action("open_inventory")
+    def open_inventory(self):
+        """Abre a janela do Sistema de Inventário"""
+        window = ttk.Toplevel(self.root)
+        window.title("SISTEMA DE INVENTÁRIO")
+        InventoryApp(window)
 
     def create_footer(self):
         """Cria o rodapé com informações e botão de logout"""

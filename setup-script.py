@@ -2,6 +2,7 @@ import PyInstaller.__main__
 import os
 from pathlib import Path
 import sys
+import shutil
 
 def create_executable():
     """
@@ -16,15 +17,23 @@ def create_executable():
     # Diretório de recursos (raiz do projeto)
     resource_dir = base_dir
     
+    # Limpar diretório dist e build se existirem
+    for dir_name in ['dist', 'build']:
+        dir_path = base_dir / dir_name
+        if dir_path.exists():
+            shutil.rmtree(dir_path)
+    
     # Arquivos de recursos e suas pastas destino
     resources = []
     for root, dirs, files in os.walk(resource_dir):
         for file in files:
+            if file.endswith(('.py', '.pyc', '.spec')):
+                continue
             file_path = Path(root) / file
             relative_path = file_path.relative_to(base_dir)
             resources.append((str(file_path), '.'))  # Inclui diretamente na raiz
     
-    # Inclui outros recursos necessários (exemplo: templates, configurações)
+    # Inclui outros recursos necessários
     additional_dirs = ['templates', 'config', 'data']
     for dir_name in additional_dirs:
         dir_path = base_dir / dir_name
@@ -33,7 +42,7 @@ def create_executable():
                 for file in files:
                     file_path = Path(root) / file
                     relative_path = file_path.relative_to(base_dir)
-                    resources.append((str(file_path), '.'))  # Inclui diretamente na raiz
+                    resources.append((str(file_path), '.'))
     
     # Lista de dados adicionais formatada conforme o sistema operacional
     if os.name == 'nt':  # Windows
@@ -55,6 +64,10 @@ def create_executable():
         'babel',
         'babel.numbers',
         'babel.core',
+        'tkinter',
+        'tkinter.ttk',
+        'tkinter.messagebox',
+        'tkinter.filedialog',
     ]
     
     # Configurações do PyInstaller
@@ -63,7 +76,7 @@ def create_executable():
         '--name=Austral',
         '--onefile',
         '--windowed',
-        f'--icon={base_dir / "icone.ico"}',  # Ícone diretamente na raiz
+        f'--icon={base_dir / "icone.ico"}',
         '--clean',
         '--noconsole',
         *[f'--add-data={data}' for data in datas],
@@ -80,5 +93,12 @@ def create_executable():
         '--exclude-module=PySide6',
     ])
 
+    print("\nExecutável criado com sucesso!")
+    print(f"Localização: {base_dir / 'dist' / 'Austral.exe'}")
+
 if __name__ == "__main__":
-    create_executable()
+    try:
+        create_executable()
+    except Exception as e:
+        print(f"Erro ao criar executável: {e}")
+        sys.exit(1)
