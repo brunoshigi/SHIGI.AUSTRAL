@@ -23,7 +23,7 @@ class InventoryApp:
         
         # Configurações da janela
         self.window.title("INVENTÁRIO - CONTAGEM DE ESTOQUE")
-        UIHelper.center_window(self.window, 1024, 768)
+        UIHelper.center_window(self.window, 1200, 600)
         
         # Variáveis
         self.local_atual = tk.StringVar(value="loja")
@@ -325,16 +325,19 @@ class InventoryApp:
                 for codigo, qtd in sorted(codigos_totais.items()):
                     writer.writerow([codigo, qtd])
 
-            # Lista completa
+            # Lista completa (agora em CSV)
             caminho_lista = os.path.join(
                 diretorio,
-                f'inventario_{timestamp}_lista_completa.txt'
+                f'inventario_{timestamp}_lista_completa.csv'
             )
-            with open(caminho_lista, 'w', encoding='utf-8') as f:
+            with open(caminho_lista, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.writer(f)
+                writer.writerow(['Código'])  # Cabeçalho
                 for local in self.inventario:
                     for codigo, qtd in self.inventario[local].items():
+                        # Repete o código conforme a quantidade
                         for _ in range(qtd):
-                            f.write(f'{codigo}\n')
+                            writer.writerow([codigo])
 
             # Mostra resumo
             self.mostrar_resumo(
