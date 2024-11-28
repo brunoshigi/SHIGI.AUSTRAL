@@ -23,7 +23,7 @@ class InventoryApp:
         
         # Configurações da janela
         self.window.title("INVENTÁRIO - CONTAGEM DE ESTOQUE")
-        UIHelper.center_window(self.window, 800, 600)
+        UIHelper.center_window(self.window, 1024, 768)
         
         # Variáveis
         self.local_atual = tk.StringVar(value="loja")
@@ -62,7 +62,8 @@ class InventoryApp:
         # Frame de histórico
         self.create_history_frame()
         
-        # Frame de ações
+        # Frame de ações e status
+        self.create_status_frame()
         self.create_action_frame()
 
     def create_location_frame(self):
@@ -74,45 +75,58 @@ class InventoryApp:
         )
         location_frame.pack(fill=tk.X, padx=5, pady=5)
 
-        for local in ['loja', 'estoque', 'quartinho_escada']:
+        locations = [
+            ('LOJA', 'loja'),
+            ('ESTOQUE', 'estoque'),
+            ('QUARTINHO ESCADA', 'quartinho_escada')
+        ]
+
+        for text, value in locations:
             ttk.Radiobutton(
                 location_frame,
-                text=local.upper(),
-                value=local,
-                variable=self.local_atual
-            ).pack(side=tk.LEFT, padx=10)
+                text=text,
+                value=value,
+                variable=self.local_atual,
+                style='primary'
+            ).pack(side=tk.LEFT, padx=20)
 
     def create_input_frame(self):
         """Cria o frame de entrada de códigos"""
         input_frame = ttk.Frame(self.main_frame)
         input_frame.pack(fill=tk.X, padx=5, pady=10)
 
+        # Label código
         ttk.Label(
             input_frame,
             text="Código:",
             font=FONT_LABEL
         ).pack(side=tk.LEFT, padx=5)
 
+        # Entry código
         self.entry_codigo = ttk.Entry(
             input_frame,
             textvariable=self.codigo,
-            width=30
+            width=30,
+            font=FONT_LABEL
         )
         self.entry_codigo.pack(side=tk.LEFT, padx=5)
         self.entry_codigo.bind('<Return>', self.registrar_codigo)
 
+        # Botões
         ttk.Button(
             input_frame,
             text="REGISTRAR",
             command=self.registrar_codigo,
-            style='primary.TButton'
+            style='primary.TButton',
+            width=15
         ).pack(side=tk.LEFT, padx=5)
 
         ttk.Button(
             input_frame,
             text="DESFAZER",
             command=self.desfazer_ultimo,
-            style='danger.TButton'
+            style='danger.TButton',
+            width=15
         ).pack(side=tk.LEFT, padx=5)
 
     def create_history_frame(self):
@@ -124,48 +138,83 @@ class InventoryApp:
         )
         history_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
-        # Treeview para histórico
+        # Frame para o Treeview e Scrollbar
+        tree_frame = ttk.Frame(history_frame)
+        tree_frame.pack(fill=tk.BOTH, expand=True)
+
+        # Treeview
         self.tree = ttk.Treeview(
-            history_frame,
+            tree_frame,
             columns=('Local', 'Código', 'Quantidade'),
-            show='headings'
+            show='headings',
+            height=15
         )
 
-        self.tree.heading('Local', text='Local')
-        self.tree.heading('Código', text='Código')
-        self.tree.heading('Quantidade', text='Quantidade')
+        # Configuração das colunas
+        self.tree.heading('Local', text='Local', anchor=tk.W)
+        self.tree.heading('Código', text='Código', anchor=tk.W)
+        self.tree.heading('Quantidade', text='Quantidade', anchor=tk.E)
 
-        # Scrollbar
-        scrollbar = ttk.Scrollbar(
-            history_frame,
-            orient=tk.VERTICAL,
-            command=self.tree.yview
-        )
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        # Configurar largura e alinhamento das colunas
+        self.tree.column('Local', width=150, anchor=tk.W)
+        self.tree.column('Código', width=200, anchor=tk.W)
+        self.tree.column('Quantidade', width=100, anchor=tk.E)
+
+        # Scrollbar vertical
+        vsb = ttk.Scrollbar(tree_frame, orient="vertical", command=self.tree.yview)
+        vsb.pack(side=tk.RIGHT, fill=tk.Y)
+        self.tree.configure(yscrollcommand=vsb.set)
+        self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        # Scrollbar horizontal
+        hsb = ttk.Scrollbar(history_frame, orient="horizontal", command=self.tree.xview)
+        hsb.pack(fill=tk.X)
+        self.tree.configure(xscrollcommand=hsb.set)
+
+    def create_status_frame(self):
+        """Cria o frame de status"""
+        self.status_frame = ttk.Frame(self.main_frame)
+        self.status_frame.pack(fill=tk.X, pady=(5, 0))
         
-        self.tree.configure(yscrollcommand=scrollbar.set)
-        self.tree.pack(fill=tk.BOTH, expand=True)
+        self.status_var = tk.StringVar()
+        self.status_label = ttk.Label(
+            self.status_frame,
+            textvariable=self.status_var,
+            font=('Helvetica', 10)
+        )
+        self.status_label.pack(side=tk.LEFT, padx=5)
 
     def create_action_frame(self):
         """Cria o frame de ações finais"""
         action_frame = ttk.Frame(self.main_frame)
         action_frame.pack(fill=tk.X, pady=10)
 
-        # Status bar
-        self.status_var = tk.StringVar()
-        status_label = ttk.Label(
-            action_frame,
-            textvariable=self.status_var,
-            font=('Helvetica', 10)
-        )
-        status_label.pack(side=tk.LEFT)
-
+        # Botões de ação
         ttk.Button(
             action_frame,
             text="FINALIZAR INVENTÁRIO",
             command=self.finalizar_inventario,
-            style='success.TButton'
-        ).pack(side=tk.RIGHT)
+            style='success.TButton',
+            width=25
+        ).pack(side=tk.RIGHT, padx=5)
+
+        # Totais
+        self.totais_var = tk.StringVar()
+        ttk.Label(
+            action_frame,
+            textvariable=self.totais_var,
+            font=FONT_LABEL
+        ).pack(side=tk.LEFT, padx=5)
+
+        self.atualizar_totais()
+
+    def atualizar_totais(self):
+        """Atualiza os totais mostrados na interface"""
+        total_geral = sum(
+            sum(local.values())
+            for local in self.inventario.values()
+        )
+        self.totais_var.set(f"Total de itens: {total_geral}")
 
     @log_action("registrar_codigo_inventario")
     def registrar_codigo(self, event=None):
@@ -183,7 +232,11 @@ class InventoryApp:
             self.inventario[local][codigo] = 1
 
         self.atualizar_historico()
-        self.status_var.set(f'Código {codigo} registrado no {local.upper()}. Total: {self.inventario[local][codigo]}')
+        self.atualizar_totais()
+        self.status_var.set(
+            f'Código {codigo} registrado no {local.upper()}. '
+            f'Total: {self.inventario[local][codigo]}'
+        )
         self.codigo.set('')
         self.entry_codigo.focus()
 
@@ -191,7 +244,10 @@ class InventoryApp:
     def desfazer_ultimo(self):
         """Desfaz a última leitura"""
         if not self.historico_codigos:
-            messagebox.showwarning("Aviso", "Não há códigos para desfazer!")
+            messagebox.showwarning(
+                "Aviso",
+                "Não há códigos para desfazer!"
+            )
             return
 
         local, codigo = self.historico_codigos.pop()
@@ -201,7 +257,10 @@ class InventoryApp:
             del self.inventario[local][codigo]
 
         self.atualizar_historico()
-        self.status_var.set(f'Última leitura desfeita: {codigo} do {local.upper()}')
+        self.atualizar_totais()
+        self.status_var.set(
+            f'Última leitura desfeita: {codigo} do {local.upper()}'
+        )
 
     def atualizar_historico(self):
         """Atualiza a visualização do histórico"""
@@ -210,13 +269,20 @@ class InventoryApp:
             
         for local in self.inventario:
             for codigo, qtd in self.inventario[local].items():
-                self.tree.insert('', 0, values=(local, codigo, qtd))
+                self.tree.insert(
+                    '',
+                    0,
+                    values=(local.upper(), codigo, qtd)
+                )
 
     @log_action("finalizar_inventario")
     def finalizar_inventario(self):
         """Finaliza o inventário e gera os arquivos"""
         if not any(self.inventario.values()):
-            messagebox.showwarning("Aviso", "Nenhum item registrado!")
+            messagebox.showwarning(
+                "Aviso",
+                "Nenhum item registrado!"
+            )
             return
 
         # Solicita diretório para salvar
@@ -229,52 +295,60 @@ class InventoryApp:
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         
-        # Arquivo detalhado
-        caminho_detalhado = os.path.join(
-            diretorio,
-            f'inventario_{timestamp}_detalhado.csv'
-        )
-        with open(caminho_detalhado, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.writer(f)
-            writer.writerow(['Local', 'Código', 'Quantidade'])
-            for local in self.inventario:
-                for codigo, qtd in self.inventario[local].items():
-                    writer.writerow([local, codigo, qtd])
+        try:
+            # Arquivo detalhado
+            caminho_detalhado = os.path.join(
+                diretorio,
+                f'inventario_{timestamp}_detalhado.csv'
+            )
+            with open(caminho_detalhado, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.writer(f)
+                writer.writerow(['Local', 'Código', 'Quantidade'])
+                for local in self.inventario:
+                    for codigo, qtd in self.inventario[local].items():
+                        writer.writerow([local.upper(), codigo, qtd])
 
-        # Arquivo consolidado
-        caminho_consolidado = os.path.join(
-            diretorio,
-            f'inventario_{timestamp}_consolidado.csv'
-        )
-        with open(caminho_consolidado, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.writer(f)
-            writer.writerow(['Código', 'Quantidade Total'])
+            # Arquivo consolidado
+            caminho_consolidado = os.path.join(
+                diretorio,
+                f'inventario_{timestamp}_consolidado.csv'
+            )
+            with open(caminho_consolidado, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.writer(f)
+                writer.writerow(['Código', 'Quantidade Total'])
+                
+                codigos_totais = {}
+                for local in self.inventario:
+                    for codigo, qtd in self.inventario[local].items():
+                        codigos_totais[codigo] = codigos_totais.get(codigo, 0) + qtd
+                
+                for codigo, qtd in sorted(codigos_totais.items()):
+                    writer.writerow([codigo, qtd])
+
+            # Lista completa
+            caminho_lista = os.path.join(
+                diretorio,
+                f'inventario_{timestamp}_lista_completa.txt'
+            )
+            with open(caminho_lista, 'w', encoding='utf-8') as f:
+                for local in self.inventario:
+                    for codigo, qtd in self.inventario[local].items():
+                        for _ in range(qtd):
+                            f.write(f'{codigo}\n')
+
+            # Mostra resumo
+            self.mostrar_resumo(
+                caminho_detalhado,
+                caminho_consolidado,
+                caminho_lista
+            )
             
-            codigos_totais = {}
-            for local in self.inventario:
-                for codigo, qtd in self.inventario[local].items():
-                    codigos_totais[codigo] = codigos_totais.get(codigo, 0) + qtd
-            
-            for codigo, qtd in sorted(codigos_totais.items()):
-                writer.writerow([codigo, qtd])
-
-        # Lista completa
-        caminho_lista = os.path.join(
-            diretorio,
-            f'inventario_{timestamp}_lista_completa.txt'
-        )
-        with open(caminho_lista, 'w', encoding='utf-8') as f:
-            for local in self.inventario:
-                for codigo, qtd in self.inventario[local].items():
-                    for _ in range(qtd):
-                        f.write(f'{codigo}\n')
-
-        # Mostra resumo
-        self.mostrar_resumo(
-            caminho_detalhado,
-            caminho_consolidado,
-            caminho_lista
-        )
+        except Exception as e:
+            self.logger.logger.error(f"Erro ao salvar arquivos: {str(e)}")
+            messagebox.showerror(
+                "Erro",
+                "Ocorreu um erro ao salvar os arquivos do inventário!"
+            )
 
     def mostrar_resumo(self, caminho_detalhado, caminho_consolidado, caminho_lista):
         """Mostra o resumo do inventário"""
