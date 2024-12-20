@@ -17,7 +17,8 @@ from transfer import EtiquetaTransferenciaApp
 from mail import EmailGeneratorApp
 from defects import DefectManagerApp
 from sinoms import PedidoSinOMSApp
-from inventory import InventoryApp  # Nova importação
+from inventory import InventoryApp
+from simulador import PontoDeVendaApp  # Importação do Ponto de Venda
 
 class AustralApp:
     def __init__(self, root: tk.Tk, username: str, role: str):
@@ -26,12 +27,12 @@ class AustralApp:
         self.role = role
         self.config = ConfigManager()
         self.logger = AustralLogger()
-        
+
         self.root.title("SISTEMA AUSTRAL - INTERFACE DO FUNCIONÁRIO")
         self.root.geometry("800x600")
         self.center_window()
         setup_window_icon(self.root)
-        
+
         self.setup_ui()
         self.logger.log_action("app_start", self.username, {"role": self.role})
 
@@ -72,7 +73,7 @@ class AustralApp:
         
         # Carrega a imagem do logotipo
         try:
-            logo_image = Imagelogo_image = Image.open("logo.png")
+            logo_image = Image.open("logo.png")
             logo_image = logo_image.resize((100, 50), Image.LANCZOS)
             logo_photo = ImageTk.PhotoImage(logo_image)
             logo_label = ttk.Label(title_frame, image=logo_photo)
@@ -129,6 +130,10 @@ class AustralApp:
             {
                 'title': 'INVENTÁRIO',
                 'command': self.open_inventory,
+            },
+            {
+                'title': 'PONTO DE VENDA',  # Novo botão
+                'command': self.open_ponto_de_venda,
             }
         ]
 
@@ -148,12 +153,12 @@ class AustralApp:
             )
             button.pack(pady=10)
 
-    @log_action("open_email_generator")
-    def open_email_generator(self):
-        """Abre a janela do Gerador de E-mail"""
+    @log_action("open_ponto_de_venda")
+    def open_ponto_de_venda(self):
+        """Abre a janela do Ponto de Venda"""
         window = ttk.Toplevel(self.root)
-        window.title("GERADOR DE E-MAIL - FECHAMENTO")
-        EmailGeneratorApp(window)
+        window.title("PONTO DE VENDA")
+        PontoDeVendaApp(window)
 
     @log_action("open_mix_diario")
     def open_mix_diario(self):
