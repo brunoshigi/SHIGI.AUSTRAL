@@ -73,7 +73,7 @@ class AustralApp:
         # Carrega a imagem do logotipo
         try:
             logo_image = Imagelogo_image = Image.open("logo.png")
-            logo_image = logo_image.resize((85, 50), Image.LANCZOS)
+            logo_image = logo_image.resize((100, 50), Image.LANCZOS)
             logo_photo = ImageTk.PhotoImage(logo_image)
             logo_label = ttk.Label(title_frame, image=logo_photo)
             logo_label.image = logo_photo
