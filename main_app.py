@@ -132,7 +132,7 @@ class AustralApp:
                 'command': self.open_inventory,
             },
             {
-                'title': 'PONTO DE VENDA',  # Novo botão
+                'title': 'SIMULADOR DE VENDAS',  # Novo botão
                 'command': self.open_ponto_de_venda,
             }
         ]
@@ -159,6 +159,13 @@ class AustralApp:
         window = ttk.Toplevel(self.root)
         window.title("PONTO DE VENDA")
         PontoDeVendaApp(window)
+
+    @log_action("open_email_generator")
+    def open_email_generator(self):
+        """Abre a janela do Gerador de E-mail"""
+        window = ttk.Toplevel(self.root)
+        window.title("GERADOR DE E-MAIL - FECHAMENTO")
+        EmailGeneratorApp(window)
 
     @log_action("open_mix_diario")
     def open_mix_diario(self):
