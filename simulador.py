@@ -36,9 +36,22 @@ class PontoDeVendaApp:
 
         self.root.title("SIMULADOR DE VENDAS - AUSTRAL")
         setup_window_icon(self.root)
-
-        self.root.minsize(1100, 600)
-        UIHelper.center_window(self.root, width=1100, height=600)
+        
+        # Ajusta para um tamanho mais adequado
+        width = 1000  # Reduzido de 1200
+        height = 650  # Reduzido de 750
+        
+        # Define o tamanho mínimo um pouco menor que o tamanho inicial
+        self.root.minsize(950, 600)
+        
+        # Centraliza a janela
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        x = (screen_width - width) // 2
+        y = (screen_height - height) // 2
+        
+        # Define a geometria com posição e tamanho
+        self.root.geometry(f"{width}x{height}+{x}+{y}")
 
         self.total = 0.0
         self.produtos = []
@@ -111,55 +124,61 @@ class PontoDeVendaApp:
                                      bootstyle="primary")
         input_frame.pack(fill=ttk.X, pady=(0, 15))
 
-        ttk.Label(input_frame, 
-                  text="CÓDIGO:", 
-                  font=("Helvetica", 12)).grid(row=0, column=0, padx=5)
+        # Frame para campos de entrada
+        entry_fields_frame = ttk.Frame(input_frame)
+        entry_fields_frame.pack(fill=ttk.X, pady=(0, 10))
 
-        self.codigo_entry = ttk.Entry(input_frame, 
+        # Grid para organizar campos
+        ttk.Label(entry_fields_frame, 
+                  text="TICKET:", 
+                  font=("Helvetica", 12)).grid(row=0, column=0, padx=5, pady=5, sticky='e')
+        
+        self.ticket_entry = ttk.Entry(entry_fields_frame,
+                                    font=("Helvetica", 12),
+                                    width=15)
+        self.ticket_entry.grid(row=0, column=1, padx=5, pady=5, sticky='w')
+
+        ttk.Label(entry_fields_frame, 
+                  text="CÓDIGO:", 
+                  font=("Helvetica", 12)).grid(row=0, column=2, padx=5, pady=5, sticky='e')
+
+        self.codigo_entry = ttk.Entry(entry_fields_frame, 
                                       font=("Helvetica", 12), 
                                       width=30)
-        self.codigo_entry.grid(row=0, column=1, padx=5)
+        self.codigo_entry.grid(row=0, column=3, padx=5, pady=5)
 
-        ttk.Label(input_frame, 
+        ttk.Label(entry_fields_frame, 
                   text="QUANTIDADE:", 
-                  font=("Helvetica", 12)).grid(row=0, column=2, padx=5)
+                  font=("Helvetica", 12)).grid(row=0, column=4, padx=5, pady=5, sticky='e')
 
-        self.quantidade_entry = ttk.Entry(input_frame, 
+        self.quantidade_entry = ttk.Entry(entry_fields_frame, 
                                           font=("Helvetica", 12), 
                                           width=5)
-        self.quantidade_entry.grid(row=0, column=3, padx=5)
+        self.quantidade_entry.grid(row=0, column=5, padx=5, pady=5)
         self.quantidade_entry.insert(0, "1")
 
+        # Frame para botões
         buttons_frame = ttk.Frame(input_frame)
-        buttons_frame.grid(row=0, column=4, padx=15)
+        buttons_frame.pack(fill=ttk.X, pady=(5, 0))
 
-        ttk.Button(buttons_frame, 
+        # Centralizar botões
+        buttons_container = ttk.Frame(buttons_frame)
+        buttons_container.pack(anchor='center')
+
+        ttk.Button(buttons_container, 
                    text="ADICIONAR (ENTER)", 
                    command=self.adicionar_produto, 
                    bootstyle="primary").pack(side=ttk.LEFT, padx=5)
 
-        ttk.Button(buttons_frame, 
+        ttk.Button(buttons_container, 
                    text="REMOVER (DEL)", 
                    command=self.remover_produto, 
                    bootstyle="danger").pack(side=ttk.LEFT, padx=5)
 
-        ttk.Button(buttons_frame, 
+        ttk.Button(buttons_container, 
                    text="TROCA (F7)", 
                    command=self.adicionar_troca, 
                    bootstyle="info").pack(side=ttk.LEFT, padx=5)
-
-        # Adiciona campo para número do ticket
-        ticket_frame = ttk.Frame(input_frame)
-        ticket_frame.grid(row=1, column=0, columnspan=5, pady=5)
-        
-        ttk.Label(ticket_frame,
-                 text="NÚMERO DO TICKET:",
-                 font=("Helvetica", 12)).pack(side=tk.LEFT, padx=5)
-        
-        self.ticket_entry = ttk.Entry(ticket_frame,
-                                    font=("Helvetica", 12),
-                                    width=15)
-        self.ticket_entry.pack(side=tk.LEFT, padx=5)
 
         list_frame = ttk.LabelFrame(main_frame, 
                                     text="PRODUTOS", 
@@ -180,11 +199,12 @@ class PontoDeVendaApp:
         self.tree.heading("preco", text="PREÇO UNIT.")
         self.tree.heading("subtotal", text="SUBTOTAL")
 
-        self.tree.column("codigo", width=100, anchor="center")
-        self.tree.column("descricao", width=350, anchor="w")
-        self.tree.column("quantidade", width=70, anchor="center")
-        self.tree.column("preco", width=100, anchor="center")
-        self.tree.column("subtotal", width=100, anchor="center")
+        # Ajusta o tamanho das colunas da TreeView para melhor aproveitamento
+        self.tree.column("codigo", width=80, anchor="center")  # Reduzido
+        self.tree.column("descricao", width=300, anchor="w")  # Reduzido
+        self.tree.column("quantidade", width=50, anchor="center")  # Reduzido
+        self.tree.column("preco", width=80, anchor="center")  # Reduzido
+        self.tree.column("subtotal", width=80, anchor="center")  # Reduzido
 
         scrollbar = ttk.Scrollbar(list_frame, orient="vertical", command=self.tree.yview)
         self.tree.configure(yscrollcommand=scrollbar.set)

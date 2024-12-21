@@ -168,20 +168,26 @@ class UIHelper:
     """Classe auxiliar para operações comuns de interface"""
 
     @staticmethod
-    def center_window(window: tk.Tk, width: int, height: int) -> None:
-        """
-        Centraliza uma janela na tela
+    def center_window(window, width=None, height=None):
+        """Centraliza a janela na tela"""
+        window.update_idletasks()
         
-        Args:
-            window: Janela a ser centralizada
-            width: Largura desejada
-            height: Altura desejada
-        """
+        # Se width e height não foram fornecidos, usa o tamanho atual da janela
+        if width is None:
+            width = window.winfo_width()
+        if height is None:
+            height = window.winfo_height()
+        
+        # Obtém as dimensões da tela
         screen_width = window.winfo_screenwidth()
         screen_height = window.winfo_screenheight()
+        
+        # Calcula a posição x,y para centralizar
         x = (screen_width - width) // 2
         y = (screen_height - height) // 2
-        window.geometry(f"{width}x{height}+{x}+{y}")
+        
+        # Define a geometria da janela
+        window.geometry(f'{width}x{height}+{x}+{y}')
 
     @staticmethod
     def show_message(
