@@ -11,6 +11,7 @@ import os
 from PIL import Image, ImageDraw, ImageFont
 import tempfile
 from pathlib import Path
+import sys
 
 def get_resource_path(filename: str) -> str:
     """Retorna o caminho correto para um recurso na raiz do projeto"""
@@ -36,22 +37,9 @@ class PontoDeVendaApp:
 
         self.root.title("SIMULADOR DE VENDAS - AUSTRAL")
         setup_window_icon(self.root)
-        
-        # Ajusta para um tamanho mais adequado
-        width = 1000  # Reduzido de 1200
-        height = 650  # Reduzido de 750
-        
-        # Define o tamanho mínimo um pouco menor que o tamanho inicial
-        self.root.minsize(950, 600)
-        
-        # Centraliza a janela
-        screen_width = self.root.winfo_screenwidth()
-        screen_height = self.root.winfo_screenheight()
-        x = (screen_width - width) // 2
-        y = (screen_height - height) // 2
-        
-        # Define a geometria com posição e tamanho
-        self.root.geometry(f"{width}x{height}+{x}+{y}")
+
+        self.root.minsize(1100, 600)
+        UIHelper.center_window(self.root, width=1100, height=600)
 
         self.total = 0.0
         self.produtos = []
@@ -66,7 +54,7 @@ class PontoDeVendaApp:
         self.carregar_dados()
         self.setup_ui()
         self.setup_shortcuts()
-        self.ticket_number = None  # Adiciona variável para número do ticket
+        self.ticket_number = None
 
     def setup_shortcuts(self):
         self.root.bind('<F2>', lambda e: self.limpar_tudo())
@@ -124,61 +112,64 @@ class PontoDeVendaApp:
                                      bootstyle="primary")
         input_frame.pack(fill=ttk.X, pady=(0, 15))
 
-        # Frame para campos de entrada
-        entry_fields_frame = ttk.Frame(input_frame)
-        entry_fields_frame.pack(fill=ttk.X, pady=(0, 10))
+        entrada_grid = ttk.Frame(input_frame)
+        entrada_grid.pack(pady=10)
 
-        # Grid para organizar campos
-        ttk.Label(entry_fields_frame, 
-                  text="TICKET:", 
-                  font=("Helvetica", 12)).grid(row=0, column=0, padx=5, pady=5, sticky='e')
-        
-        self.ticket_entry = ttk.Entry(entry_fields_frame,
-                                    font=("Helvetica", 12),
-                                    width=15)
-        self.ticket_entry.grid(row=0, column=1, padx=5, pady=5, sticky='w')
-
-        ttk.Label(entry_fields_frame, 
+        ttk.Label(entrada_grid, 
                   text="CÓDIGO:", 
-                  font=("Helvetica", 12)).grid(row=0, column=2, padx=5, pady=5, sticky='e')
+                  font=("Helvetica", 12)).grid(row=0, column=0, padx=5, sticky='e')
+        
+        self.codigo_entry = ttk.Entry(entrada_grid, 
+                                    font=("Helvetica", 12), 
+                                    width=30)
+        self.codigo_entry.grid(row=0, column=1, padx=5)
 
-        self.codigo_entry = ttk.Entry(entry_fields_frame, 
-                                      font=("Helvetica", 12), 
-                                      width=30)
-        self.codigo_entry.grid(row=0, column=3, padx=5, pady=5)
-
-        ttk.Label(entry_fields_frame, 
+        ttk.Label(entrada_grid, 
                   text="QUANTIDADE:", 
-                  font=("Helvetica", 12)).grid(row=0, column=4, padx=5, pady=5, sticky='e')
-
-        self.quantidade_entry = ttk.Entry(entry_fields_frame, 
-                                          font=("Helvetica", 12), 
-                                          width=5)
-        self.quantidade_entry.grid(row=0, column=5, padx=5, pady=5)
+                  font=("Helvetica", 12)).grid(row=0, column=2, padx=5, sticky='e')
+        
+        self.quantidade_entry = ttk.Entry(entrada_grid, 
+                                        font=("Helvetica", 12), 
+                                        width=5)
+        self.quantidade_entry.grid(row=0, column=3, padx=5)
         self.quantidade_entry.insert(0, "1")
 
-        # Frame para botões
-        buttons_frame = ttk.Frame(input_frame)
-        buttons_frame.pack(fill=ttk.X, pady=(5, 0))
+        ttk.Label(entrada_grid, 
+                  text="TIPO:", 
+                  font=("Helvetica", 12)).grid(row=0, column=4, padx=5, sticky='e')
+        
+        self.tipo_operacao = ttk.Combobox(entrada_grid,
+                                         values=["VENDA", "TROCA"],
+                                         font=("Helvetica", 12),
+                                         width=8,
+                                         state="readonly")
+        self.tipo_operacao.grid(row=0, column=5, padx=5)
+        self.tipo_operacao.set("VENDA")
 
-        # Centralizar botões
-        buttons_container = ttk.Frame(buttons_frame)
-        buttons_container.pack(anchor='center')
+        buttons_frame = ttk.Frame(entrada_grid)
+        buttons_frame.grid(row=0, column=6, padx=15)
 
-        ttk.Button(buttons_container, 
+        ttk.Button(buttons_frame, 
                    text="ADICIONAR (ENTER)", 
                    command=self.adicionar_produto, 
                    bootstyle="primary").pack(side=ttk.LEFT, padx=5)
 
-        ttk.Button(buttons_container, 
+        ttk.Button(buttons_frame, 
                    text="REMOVER (DEL)", 
                    command=self.remover_produto, 
                    bootstyle="danger").pack(side=ttk.LEFT, padx=5)
 
-        ttk.Button(buttons_container, 
-                   text="TROCA (F7)", 
-                   command=self.adicionar_troca, 
-                   bootstyle="info").pack(side=ttk.LEFT, padx=5)
+        ticket_frame = ttk.Frame(input_frame)
+        ticket_frame.pack(pady=5)
+        
+        ttk.Label(ticket_frame,
+                 text="NÚMERO DO TICKET:",
+                 font=("Helvetica", 12)).pack(side=tk.LEFT, padx=5)
+        
+        self.ticket_entry = ttk.Entry(ticket_frame,
+                                    font=("Helvetica", 12),
+                                    width=15)
+        self.ticket_entry.pack(side=tk.LEFT, padx=5)
 
         list_frame = ttk.LabelFrame(main_frame, 
                                     text="PRODUTOS", 
@@ -188,7 +179,7 @@ class PontoDeVendaApp:
 
         self.tree = ttk.Treeview(
             list_frame,
-            columns=("codigo", "descricao", "quantidade", "preco", "subtotal"),
+            columns=("codigo", "descricao", "quantidade", "preco", "subtotal", "tipo"),
             show="headings",
             height=15
         )
@@ -198,13 +189,17 @@ class PontoDeVendaApp:
         self.tree.heading("quantidade", text="QTD")
         self.tree.heading("preco", text="PREÇO UNIT.")
         self.tree.heading("subtotal", text="SUBTOTAL")
+        self.tree.heading("tipo", text="TIPO")
 
-        # Ajusta o tamanho das colunas da TreeView para melhor aproveitamento
-        self.tree.column("codigo", width=80, anchor="center")  # Reduzido
-        self.tree.column("descricao", width=300, anchor="w")  # Reduzido
-        self.tree.column("quantidade", width=50, anchor="center")  # Reduzido
-        self.tree.column("preco", width=80, anchor="center")  # Reduzido
-        self.tree.column("subtotal", width=80, anchor="center")  # Reduzido
+        self.tree.column("codigo", width=100, anchor="center")
+        self.tree.column("descricao", width=300, anchor="w")
+        self.tree.column("quantidade", width=70, anchor="center")
+        self.tree.column("preco", width=100, anchor="center")
+        self.tree.column("subtotal", width=100, anchor="center")
+        self.tree.column("tipo", width=80, anchor="center")
+
+        self.tree.tag_configure('troca', foreground='red')
+        self.tree.tag_configure('venda', foreground='black')
 
         scrollbar = ttk.Scrollbar(list_frame, orient="vertical", command=self.tree.yview)
         self.tree.configure(yscrollcommand=scrollbar.set)
@@ -245,6 +240,7 @@ class PontoDeVendaApp:
     def adicionar_produto(self, event=None):
         codigo = self.codigo_entry.get().strip().lower()
         quantidade = self.quantidade_entry.get().strip()
+        tipo = self.tipo_operacao.get()
 
         if not codigo:
             messagebox.showwarning("ATENÇÃO", "DIGITE UM CÓDIGO DE BARRAS!")
@@ -259,22 +255,26 @@ class PontoDeVendaApp:
             preco = self.produto_precos[codigo]
             descricao = self.produto_descricoes.get(codigo, "DESCRIÇÃO NÃO DISPONÍVEL")
             subtotal = quantidade * preco
-            self.produtos.append((codigo, descricao, quantidade, preco, subtotal))
+            
+            if tipo == "TROCA":
+                subtotal = -subtotal
 
-            self.tree.insert("", "end", values=(
-                codigo,
-                descricao,
-                quantidade,
-                f"R$ {preco:.2f}",
-                f"R$ {subtotal:.2f}"
-            ))
-
+            self.produtos.append((codigo, descricao, quantidade, preco, subtotal, tipo))
             self.total += subtotal
+
+            self.tree.insert("", "end", 
+                           values=(codigo, descricao, quantidade, 
+                                 f"R$ {abs(preco):.2f}", 
+                                 f"R$ {abs(subtotal):.2f}",
+                                 tipo),
+                           tags=(tipo.lower(),))
+
             self.total_label.config(text=f"TOTAL: R$ {self.total:.2f}")
 
             self.codigo_entry.delete(0, "end")
             self.quantidade_entry.delete(0, "end")
             self.quantidade_entry.insert(0, "1")
+            self.tipo_operacao.set("VENDA")
             self.codigo_entry.focus()
         else:
             messagebox.showerror("ERRO", "PRODUTO NÃO ENCONTRADO!")
@@ -289,6 +289,10 @@ class PontoDeVendaApp:
         valores = item['values']
         subtotal_str = valores[4].replace('R$ ', '').replace(',', '.')
         subtotal = float(subtotal_str)
+        
+        # Ajusta o subtotal baseado no tipo de operação
+        if valores[5] == "TROCA":
+            subtotal = -subtotal
 
         self.total -= subtotal
         self.total_label.config(text=f"TOTAL: R$ {self.total:.2f}")
@@ -309,7 +313,6 @@ class PontoDeVendaApp:
         self.ticket_entry.delete(0, tk.END)
 
     def adicionar_troca(self):
-        """Lança valor de troca a abater do total."""
         valor = simpledialog.askfloat("Trocas", "Valor da troca:")
         if valor and valor > 0:
             self.trocas += valor
@@ -320,7 +323,6 @@ class PontoDeVendaApp:
             messagebox.showwarning("ATENÇÃO", "Valor inválido para troca!")
 
     def gerar_etiqueta_venda(self):
-        """Gera imagem com os dados da venda."""
         try:
             imagem = Image.new("RGB", (self.LARGURA_PAPEL, self.ALTURA_ETIQUETA), "white")
             draw = ImageDraw.Draw(imagem)
@@ -360,25 +362,28 @@ class PontoDeVendaApp:
             draw.text((20, y), f"DATA: {data_hora}", font=fonte_texto, fill="black")
             y += 40
 
-            # Produtos com códigos
+            # Produtos com códigos e indicação de troca
             draw.text((20, y), "PRODUTOS:", font=fonte_titulo, fill="black")
             y += 40
 
-            for codigo, desc, qtd, preco, subtotal in self.produtos:
+            for codigo, desc, qtd, preco, subtotal, tipo in self.produtos:
+                # Define a cor baseada no tipo de operação
+                cor = "red" if tipo == "TROCA" else "black"
+                
                 # Adiciona código do produto
                 texto_codigo = f"COD: {codigo}"
-                draw.text((20, y), texto_codigo, font=fonte_texto, fill="black")
+                draw.text((20, y), texto_codigo, font=fonte_texto, fill=cor)
                 y += 25
                 
-                # Descrição do produto
-                texto_desc = f"{desc}"
-                draw.text((20, y), texto_desc, font=fonte_texto, fill="black")
+                # Descrição do produto com indicação do tipo
+                texto_desc = f"{desc} ({tipo})"
+                draw.text((20, y), texto_desc, font=fonte_texto, fill=cor)
                 y += 25
                 
                 # Quantidade e valores
-                texto_valor = f"{qtd}x R$ {preco:.2f} = R$ {subtotal:.2f}"
-                draw.text((40, y), texto_valor, font=fonte_texto, fill="black")
-                y += 35  # Aumentado espaçamento entre produtos
+                texto_valor = f"{qtd}x R$ {abs(preco):.2f} = R$ {abs(subtotal):.2f}"
+                draw.text((40, y), texto_valor, font=fonte_texto, fill=cor)
+                y += 35
 
             if self.trocas > 0:
                 draw.text((20, y), f"TROCAS: R$ {self.trocas:.2f}", font=fonte_titulo, fill="red")
@@ -406,18 +411,22 @@ class PontoDeVendaApp:
         recibo += f"DATA: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}\n"
         recibo += "=" * 40 + "\n\n"
 
-        for codigo, desc, qtd, preco, subtotal in self.produtos:
+        for codigo, desc, qtd, preco, subtotal, tipo in self.produtos:
             recibo += f"COD: {codigo}\n"
-            recibo += f"{desc}\n"
-            recibo += f"{qtd}x R$ {preco:.2f} = R$ {subtotal:.2f}\n\n"
+            recibo += f"{desc} ({tipo})\n"
+            recibo += f"{qtd}x R$ {abs(preco):.2f} = R$ {abs(subtotal):.2f}\n\n"
+
+        if self.trocas > 0:
+            recibo += "=" * 40 + "\n"
+            recibo += f"TROCAS: R$ {self.trocas:.2f}\n"
 
         recibo += "=" * 40 + "\n"
-        recibo += f"TOTAL: R$ {self.total:.2f}\n"
+        recibo += f"TOTAL FINAL: R$ {self.total:.2f}\n"
         recibo += "=" * 40 + "\n"
         recibo += "\nOBRIGADO PELA PREFERÊNCIA!"
 
         messagebox.showinfo("VENDA FINALIZADA", recibo)
-        self.gerar_etiqueta_venda() # Gera e mostra a etiqueta
+        self.gerar_etiqueta_venda()
         self.limpar_tudo()
 
 if __name__ == "__main__":

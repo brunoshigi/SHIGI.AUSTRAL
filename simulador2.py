@@ -1,12 +1,32 @@
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from datetime import datetime
-from tkinter import messagebox
+from tkinter import messagebox, simpledialog
+import tkinter as tk
 import pandas as pd
 from utils import UIHelper, setup_window_icon
 from logger import AustralLogger, log_action
 from config import ConfigManager
+import os
+from PIL import Image, ImageDraw, ImageFont
+import tempfile
 from pathlib import Path
+
+def get_resource_path(filename: str) -> str:
+    """Retorna o caminho correto para um recurso na raiz do projeto"""
+    try:
+        if getattr(sys, '_MEIPASS', False):
+            return os.path.join(sys._MEIPASS, filename)
+        
+        base_path = Path(__file__).resolve().parent
+        resource_path = base_path / filename
+
+        if resource_path.exists():
+            return str(resource_path)
+        raise FileNotFoundError(f"Recurso não encontrado: {filename}")
+    except Exception as e:
+        print(f"Erro ao localizar recurso {filename}: {e}")
+        return None
 
 class PontoDeVendaApp:
     def __init__(self, root):
@@ -16,7 +36,7 @@ class PontoDeVendaApp:
 
         self.root.title("SIMULADOR DE VENDAS - AUSTRAL")
         setup_window_icon(self.root)
-        
+
         self.root.minsize(1100, 600)
         UIHelper.center_window(self.root, width=1100, height=600)
 
@@ -24,20 +44,27 @@ class PontoDeVendaApp:
         self.produtos = []
         self.produto_precos = {}
         self.produto_descricoes = {}
+        self.trocas = 0.0
+
+        self.LARGURA_PAPEL = 500
+        self.ALTURA_ETIQUETA = 700
+        self.MARGEM = 20
 
         self.carregar_dados()
         self.setup_ui()
         self.setup_shortcuts()
+        self.ticket_number = None  # Adiciona variável para número do ticket
 
     def setup_shortcuts(self):
         self.root.bind('<F2>', lambda e: self.limpar_tudo())
         self.root.bind('<F5>', lambda e: self.finalizar_venda())
         self.root.bind('<Delete>', lambda e: self.remover_produto())
+        self.root.bind('<F7>', lambda e: self.adicionar_troca())
         self.codigo_entry.bind("<Return>", self.adicionar_produto)
 
     def carregar_dados(self):
         try:
-            file_path = r"C:\Users\geren\Downloads\data.xlsx"
+            file_path = r"C:\\Users\\geren\\Downloads\\data.xlsx"
             df = pd.read_excel(file_path)
             self.produto_precos = {
                 str(codigo).lower(): preco for codigo, preco in zip(df['codigo_barras'], df['preco_produto'])
@@ -58,12 +85,12 @@ class PontoDeVendaApp:
 
         titulo_frame = ttk.Frame(header_frame)
         titulo_frame.pack(side=ttk.LEFT)
-        
+
         logo_label = ttk.Label(titulo_frame, text="AUSTRAL", 
                                font=("Helvetica", 12, "bold"), 
                                bootstyle="primary")
         logo_label.pack()
-        
+
         ttk.Label(titulo_frame, 
                   text="SIMULADOR DE VENDAS", 
                   font=("Helvetica", 24, "bold"), 
@@ -87,7 +114,7 @@ class PontoDeVendaApp:
         ttk.Label(input_frame, 
                   text="CÓDIGO:", 
                   font=("Helvetica", 12)).grid(row=0, column=0, padx=5)
-        
+
         self.codigo_entry = ttk.Entry(input_frame, 
                                       font=("Helvetica", 12), 
                                       width=30)
@@ -96,7 +123,7 @@ class PontoDeVendaApp:
         ttk.Label(input_frame, 
                   text="QUANTIDADE:", 
                   font=("Helvetica", 12)).grid(row=0, column=2, padx=5)
-        
+
         self.quantidade_entry = ttk.Entry(input_frame, 
                                           font=("Helvetica", 12), 
                                           width=5)
@@ -110,11 +137,29 @@ class PontoDeVendaApp:
                    text="ADICIONAR (ENTER)", 
                    command=self.adicionar_produto, 
                    bootstyle="primary").pack(side=ttk.LEFT, padx=5)
-        
+
         ttk.Button(buttons_frame, 
                    text="REMOVER (DEL)", 
                    command=self.remover_produto, 
                    bootstyle="danger").pack(side=ttk.LEFT, padx=5)
+
+        ttk.Button(buttons_frame, 
+                   text="TROCA (F7)", 
+                   command=self.adicionar_troca, 
+                   bootstyle="info").pack(side=ttk.LEFT, padx=5)
+
+        # Adiciona campo para número do ticket
+        ticket_frame = ttk.Frame(input_frame)
+        ticket_frame.grid(row=1, column=0, columnspan=5, pady=5)
+        
+        ttk.Label(ticket_frame,
+                 text="NÚMERO DO TICKET:",
+                 font=("Helvetica", 12)).pack(side=tk.LEFT, padx=5)
+        
+        self.ticket_entry = ttk.Entry(ticket_frame,
+                                    font=("Helvetica", 12),
+                                    width=15)
+        self.ticket_entry.pack(side=tk.LEFT, padx=5)
 
         list_frame = ttk.LabelFrame(main_frame, 
                                     text="PRODUTOS", 
@@ -180,11 +225,11 @@ class PontoDeVendaApp:
     def adicionar_produto(self, event=None):
         codigo = self.codigo_entry.get().strip().lower()
         quantidade = self.quantidade_entry.get().strip()
-        
+
         if not codigo:
             messagebox.showwarning("ATENÇÃO", "DIGITE UM CÓDIGO DE BARRAS!")
             return
-            
+
         if not quantidade.isdigit() or int(quantidade) <= 0:
             messagebox.showerror("ERRO", "QUANTIDADE INVÁLIDA!")
             return
@@ -241,6 +286,94 @@ class PontoDeVendaApp:
         self.total = 0.0
         self.total_label.config(text="TOTAL: R$ 0,00")
         self.codigo_entry.focus()
+        self.ticket_entry.delete(0, tk.END)
+
+    def adicionar_troca(self):
+        """Lança valor de troca a abater do total."""
+        valor = simpledialog.askfloat("Trocas", "Valor da troca:")
+        if valor and valor > 0:
+            self.trocas += valor
+            self.total -= valor
+            self.total_label.config(text=f"TOTAL: R$ {self.total:.2f}")
+            messagebox.showinfo("Troca registrada", f"Troca de R$ {valor:.2f} aplicada.")
+        else:
+            messagebox.showwarning("ATENÇÃO", "Valor inválido para troca!")
+
+    def gerar_etiqueta_venda(self):
+        """Gera imagem com os dados da venda."""
+        try:
+            imagem = Image.new("RGB", (self.LARGURA_PAPEL, self.ALTURA_ETIQUETA), "white")
+            draw = ImageDraw.Draw(imagem)
+            
+            try:
+                fonte_titulo = ImageFont.truetype("arial.ttf", 35)
+                fonte_texto = ImageFont.truetype("arial.ttf", 25)
+            except:
+                fonte_titulo = fonte_texto = ImageFont.load_default()
+
+            y = self.MARGEM
+
+            # Adicionar logo
+            try:
+                logo_path = get_resource_path("logo.png")
+                if logo_path:
+                    logo = Image.open(logo_path)
+                    logo_width = 200
+                    ratio = logo.size[1] / logo.size[0]
+                    logo_height = int(logo_width * ratio)
+                    logo = logo.resize((logo_width, logo_height))
+                    x_pos = (self.LARGURA_PAPEL - logo_width) // 2
+                    imagem.paste(logo, (x_pos, y), mask=logo if 'A' in logo.getbands() else None)
+                    y += logo_height + 20
+            except:
+                draw.text((20, y), "AUSTRAL", font=fonte_titulo, fill="black")
+                y += 50
+
+            # Número do ticket se existir
+            if self.ticket_entry.get().strip():
+                draw.text((20, y), f"TICKET: #{self.ticket_entry.get().strip()}", 
+                         font=fonte_titulo, fill="black")
+                y += 40
+
+            # Data e hora
+            data_hora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            draw.text((20, y), f"DATA: {data_hora}", font=fonte_texto, fill="black")
+            y += 40
+
+            # Produtos com códigos
+            draw.text((20, y), "PRODUTOS:", font=fonte_titulo, fill="black")
+            y += 40
+
+            for codigo, desc, qtd, preco, subtotal in self.produtos:
+                # Adiciona código do produto
+                texto_codigo = f"COD: {codigo}"
+                draw.text((20, y), texto_codigo, font=fonte_texto, fill="black")
+                y += 25
+                
+                # Descrição do produto
+                texto_desc = f"{desc}"
+                draw.text((20, y), texto_desc, font=fonte_texto, fill="black")
+                y += 25
+                
+                # Quantidade e valores
+                texto_valor = f"{qtd}x R$ {preco:.2f} = R$ {subtotal:.2f}"
+                draw.text((40, y), texto_valor, font=fonte_texto, fill="black")
+                y += 35  # Aumentado espaçamento entre produtos
+
+            if self.trocas > 0:
+                draw.text((20, y), f"TROCAS: R$ {self.trocas:.2f}", font=fonte_titulo, fill="red")
+                y += 40
+
+            draw.text((20, y), f"TOTAL FINAL: R$ {self.total:.2f}", font=fonte_titulo, fill="black")
+
+            temp_dir = tempfile.gettempdir()
+            filename = f"recibo_venda_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
+            path = os.path.join(temp_dir, filename)
+            imagem.save(path)
+            imagem.show()
+
+        except Exception as e:
+            messagebox.showerror("ERRO", f"Não foi possível gerar etiqueta: {str(e)}")
 
     def finalizar_venda(self):
         if not self.produtos:
@@ -248,21 +381,24 @@ class PontoDeVendaApp:
             return
 
         recibo = "=== AUSTRAL ===\n"
+        if self.ticket_entry.get().strip():
+            recibo += f"TICKET: #{self.ticket_entry.get().strip()}\n"
         recibo += f"DATA: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}\n"
         recibo += "=" * 40 + "\n\n"
-        
+
         for codigo, desc, qtd, preco, subtotal in self.produtos:
+            recibo += f"COD: {codigo}\n"
             recibo += f"{desc}\n"
             recibo += f"{qtd}x R$ {preco:.2f} = R$ {subtotal:.2f}\n\n"
-        
+
         recibo += "=" * 40 + "\n"
         recibo += f"TOTAL: R$ {self.total:.2f}\n"
         recibo += "=" * 40 + "\n"
         recibo += "\nOBRIGADO PELA PREFERÊNCIA!"
 
         messagebox.showinfo("VENDA FINALIZADA", recibo)
+        self.gerar_etiqueta_venda() # Gera e mostra a etiqueta
         self.limpar_tudo()
-
 
 if __name__ == "__main__":
     root = ttk.Window(themename="litera")
