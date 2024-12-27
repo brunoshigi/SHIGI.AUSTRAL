@@ -38,8 +38,8 @@ class PontoDeVendaApp:
         self.root.title("SIMULADOR DE VENDAS - AUSTRAL")
         setup_window_icon(self.root)
 
-        self.root.minsize(1100, 600)
-        UIHelper.center_window(self.root, width=1100, height=600)
+        self.root.minsize(900, 500)  # Reduzido o tamanho mínimo
+        UIHelper.center_window(self.root, width=900, height=500)
 
         self.total = 0.0
         self.produtos = []
@@ -78,110 +78,113 @@ class PontoDeVendaApp:
             messagebox.showerror("ERRO", f"ERRO AO CARREGAR OS DADOS: {str(e)}")
 
     def setup_ui(self):
-        main_frame = ttk.Frame(self.root, padding="15")
+        main_frame = ttk.Frame(self.root, padding="5")
         main_frame.pack(fill=ttk.BOTH, expand=True)
 
+        self.setup_header(main_frame)
+        self.setup_input_frame(main_frame)
+        self.setup_list_frame(main_frame)
+        self.setup_bottom_frame(main_frame)
+
+    def setup_header(self, main_frame):
         header_frame = ttk.Frame(main_frame)
-        header_frame.pack(fill=ttk.X, pady=(0, 15))
+        header_frame.pack(fill=ttk.X, pady=(0, 10))
 
         titulo_frame = ttk.Frame(header_frame)
         titulo_frame.pack(side=ttk.LEFT)
 
-        logo_label = ttk.Label(titulo_frame, text="AUSTRAL", 
-                               font=("Helvetica", 12, "bold"), 
-                               bootstyle="primary")
-        logo_label.pack()
+        ttk.Label(titulo_frame, text="AUSTRAL", 
+                 font=("Helvetica", 10, "bold"),
+                 bootstyle="primary").pack()
 
         ttk.Label(titulo_frame, 
-                  text="SIMULADOR DE VENDAS", 
-                  font=("Helvetica", 24, "bold"), 
-                  bootstyle="primary").pack()
+                 text="SIMULADOR DE VENDAS", 
+                 font=("Helvetica", 18, "bold"),
+                 bootstyle="primary").pack()
 
         header_right = ttk.Frame(header_frame)
         header_right.pack(side=ttk.RIGHT)
 
         self.time_label = ttk.Label(header_right, 
-                                    text="", 
-                                    font=("Helvetica", 12))
+                                  text="", 
+                                  font=("Helvetica", 10))
         self.time_label.pack(side=ttk.BOTTOM)
-        self.update_time()
 
+    def setup_input_frame(self, main_frame):
         input_frame = ttk.LabelFrame(main_frame, 
-                                     text="ENTRADA DE PRODUTOS", 
-                                     padding="15",
-                                     bootstyle="primary")
-        input_frame.pack(fill=ttk.X, pady=(0, 15))
+                                   text="ENTRADA DE PRODUTOS", 
+                                   padding="5",
+                                   bootstyle="primary")
+        input_frame.pack(fill=ttk.X, pady=(0, 10))
 
-        entrada_grid = ttk.Frame(input_frame)
-        entrada_grid.pack(pady=10)
+        # Frame superior para código, quantidade e tipo
+        top_frame = ttk.Frame(input_frame)
+        top_frame.pack(fill=ttk.X, padx=5, pady=2)
 
-        ttk.Label(entrada_grid, 
-                  text="CÓDIGO:", 
-                  font=("Helvetica", 12)).grid(row=0, column=0, padx=5, sticky='e')
-        
-        self.codigo_entry = ttk.Entry(entrada_grid, 
-                                    font=("Helvetica", 12), 
-                                    width=30)
-        self.codigo_entry.grid(row=0, column=1, padx=5)
+        # Frame para código
+        codigo_frame = ttk.Frame(top_frame)
+        codigo_frame.pack(side=ttk.LEFT, padx=2)
+        ttk.Label(codigo_frame, text="CÓDIGO:", font=("Helvetica", 10)).pack(side=ttk.LEFT, padx=2)
+        self.codigo_entry = ttk.Entry(codigo_frame, font=("Helvetica", 10), width=30)
+        self.codigo_entry.pack(side=ttk.LEFT)
 
-        ttk.Label(entrada_grid, 
-                  text="QUANTIDADE:", 
-                  font=("Helvetica", 12)).grid(row=0, column=2, padx=5, sticky='e')
-        
-        self.quantidade_entry = ttk.Entry(entrada_grid, 
-                                        font=("Helvetica", 12), 
-                                        width=5)
-        self.quantidade_entry.grid(row=0, column=3, padx=5)
+        # Frame para quantidade
+        qtd_frame = ttk.Frame(top_frame)
+        qtd_frame.pack(side=ttk.LEFT, padx=2)
+        ttk.Label(qtd_frame, text="QTD:", font=("Helvetica", 10)).pack(side=ttk.LEFT, padx=2)
+        self.quantidade_entry = ttk.Entry(qtd_frame, font=("Helvetica", 10), width=5)
+        self.quantidade_entry.pack(side=ttk.LEFT)
         self.quantidade_entry.insert(0, "1")
 
-        ttk.Label(entrada_grid, 
-                  text="TIPO:", 
-                  font=("Helvetica", 12)).grid(row=0, column=4, padx=5, sticky='e')
-        
-        self.tipo_operacao = ttk.Combobox(entrada_grid,
-                                         values=["VENDA", "TROCA"],
-                                         font=("Helvetica", 12),
-                                         width=8,
-                                         state="readonly")
-        self.tipo_operacao.grid(row=0, column=5, padx=5)
+        # Frame para tipo
+        tipo_frame = ttk.Frame(top_frame)
+        tipo_frame.pack(side=ttk.LEFT, padx=2)
+        ttk.Label(tipo_frame, text="TIPO:", font=("Helvetica", 10)).pack(side=ttk.LEFT, padx=2)
+        self.tipo_operacao = ttk.Combobox(tipo_frame,
+                                        values=["VENDA", "TROCA"],
+                                        font=("Helvetica", 10),
+                                        width=8,
+                                        state="readonly")
+        self.tipo_operacao.pack(side=ttk.LEFT)
         self.tipo_operacao.set("VENDA")
 
-        buttons_frame = ttk.Frame(entrada_grid)
-        buttons_frame.grid(row=0, column=6, padx=15)
-
+        # Frame para botões
+        buttons_frame = ttk.Frame(top_frame)
+        buttons_frame.pack(side=ttk.LEFT, padx=2)
         ttk.Button(buttons_frame, 
-                   text="ADICIONAR (ENTER)", 
-                   command=self.adicionar_produto, 
-                   bootstyle="primary").pack(side=ttk.LEFT, padx=5)
-
+                  text="ADICIONAR (ENT)", 
+                  command=self.adicionar_produto, 
+                  bootstyle="primary",
+                  width=20).pack(side=ttk.LEFT, padx=2)
         ttk.Button(buttons_frame, 
-                   text="REMOVER (DEL)", 
-                   command=self.remover_produto, 
-                   bootstyle="danger").pack(side=ttk.LEFT, padx=5)
+                  text="REMOVER (DEL)", 
+                  command=self.remover_produto, 
+                  bootstyle="danger",
+                  width=15).pack(side=ttk.LEFT, padx=2)
 
-        ticket_frame = ttk.Frame(input_frame)
-        ticket_frame.pack(pady=5)
-        
-        ttk.Label(ticket_frame,
-                 text="NÚMERO DO TICKET:",
-                 font=("Helvetica", 12)).pack(side=tk.LEFT, padx=5)
-        
-        self.ticket_entry = ttk.Entry(ticket_frame,
-                                    font=("Helvetica", 12),
-                                    width=15)
-        self.ticket_entry.pack(side=tk.LEFT, padx=5)
+        # Frame inferior para número do ticket
+        bottom_frame = ttk.Frame(input_frame)
+        bottom_frame.pack(fill=ttk.X, padx=5, pady=2)
+        ttk.Label(bottom_frame,
+                text="TICKET:",
+                font=("Helvetica", 10)).pack(side=ttk.LEFT, padx=2)
+        self.ticket_entry = ttk.Entry(bottom_frame,
+                                   font=("Helvetica", 10),
+                                   width=12)
+        self.ticket_entry.pack(side=ttk.LEFT, padx=2)
 
+    def setup_list_frame(self, main_frame):
         list_frame = ttk.LabelFrame(main_frame, 
-                                    text="PRODUTOS", 
-                                    padding="15",
-                                    bootstyle="primary")
-        list_frame.pack(fill=ttk.BOTH, expand=True, pady=(0, 15))
+                                  text="PRODUTOS", 
+                                  padding="5",
+                                  bootstyle="primary")
+        list_frame.pack(fill=ttk.BOTH, expand=True, pady=(0, 10))
 
         self.tree = ttk.Treeview(
             list_frame,
             columns=("codigo", "descricao", "quantidade", "preco", "subtotal", "tipo"),
             show="headings",
-            height=15
+            height=12
         )
 
         self.tree.heading("codigo", text="CÓDIGO")
@@ -191,12 +194,12 @@ class PontoDeVendaApp:
         self.tree.heading("subtotal", text="SUBTOTAL")
         self.tree.heading("tipo", text="TIPO")
 
-        self.tree.column("codigo", width=100, anchor="center")
-        self.tree.column("descricao", width=300, anchor="w")
-        self.tree.column("quantidade", width=70, anchor="center")
-        self.tree.column("preco", width=100, anchor="center")
-        self.tree.column("subtotal", width=100, anchor="center")
-        self.tree.column("tipo", width=80, anchor="center")
+        self.tree.column("codigo", width=80, anchor="center")
+        self.tree.column("descricao", width=250, anchor="w")
+        self.tree.column("quantidade", width=50, anchor="center")
+        self.tree.column("preco", width=80, anchor="center")
+        self.tree.column("subtotal", width=80, anchor="center")
+        self.tree.column("tipo", width=60, anchor="center")
 
         self.tree.tag_configure('troca', foreground='red')
         self.tree.tag_configure('venda', foreground='black')
@@ -206,30 +209,30 @@ class PontoDeVendaApp:
         self.tree.pack(side=ttk.LEFT, fill=ttk.BOTH, expand=True)
         scrollbar.pack(side=ttk.RIGHT, fill=ttk.Y)
 
+    def setup_bottom_frame(self, main_frame):
         bottom_frame = ttk.Frame(main_frame)
-        bottom_frame.pack(fill=ttk.X)
+        bottom_frame.pack(fill=ttk.X, pady=5)
 
-        left_buttons = ttk.Frame(bottom_frame)
-        left_buttons.pack(side=ttk.LEFT)
-
-        ttk.Button(left_buttons, 
-                   text="NOVA VENDA (F2)", 
-                   command=self.limpar_tudo, 
-                   bootstyle="warning").pack(side=ttk.LEFT, padx=5)
+        left_frame = ttk.Frame(bottom_frame)
+        left_frame.pack(side=ttk.LEFT)
+        ttk.Button(left_frame, 
+                  text="NOVA VENDA (F2)", 
+                  command=self.limpar_tudo, 
+                  bootstyle="warning",
+                  width=15).pack(side=ttk.LEFT, padx=2)
 
         right_frame = ttk.Frame(bottom_frame)
         right_frame.pack(side=ttk.RIGHT)
-
         self.total_label = ttk.Label(right_frame, 
-                                     text="TOTAL: R$ 0,00", 
-                                     font=("Helvetica", 18, "bold"), 
-                                     bootstyle="primary")
-        self.total_label.pack(side=ttk.LEFT, padx=15)
-
+                                   text="TOTAL: R$ 0,00", 
+                                   font=("Helvetica", 14, "bold"),
+                                   bootstyle="primary")
+        self.total_label.pack(side=ttk.LEFT, padx=5)
         ttk.Button(right_frame, 
-                   text="FINALIZAR VENDA (F5)", 
-                   command=self.finalizar_venda, 
-                   bootstyle="success").pack(side=ttk.LEFT)
+                  text="FINALIZAR VENDA (F5)", 
+                  command=self.finalizar_venda, 
+                  bootstyle="success",
+                  width=20).pack(side=ttk.LEFT, padx=2)
 
     def update_time(self):
         now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
@@ -290,7 +293,6 @@ class PontoDeVendaApp:
         subtotal_str = valores[4].replace('R$ ', '').replace(',', '.')
         subtotal = float(subtotal_str)
         
-        # Ajusta o subtotal baseado no tipo de operação
         if valores[5] == "TROCA":
             subtotal = -subtotal
 
