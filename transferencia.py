@@ -5,10 +5,12 @@ from PIL import Image, ImageDraw, ImageFont
 from datetime import datetime
 import os
 import tempfile
+from lojas import lojas, estoque, matriz, servicos
+import sys
+from pathlib import Path
 from config import ConfigManager
 from logger import AustralLogger, log_action
 from utils import FONT_LABEL, FONT_ENTRY, FONT_TITLE
-from lojas import lojas, estoque, matriz, servicos
 from utils import setup_window_icon
 from utils import UIHelper
 from resource_manager import resource_manager

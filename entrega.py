@@ -1,21 +1,19 @@
 import tkinter as tk
 from tkinter import messagebox
-import ttkbootstrap as ttk  # Import correto do ttkbootstrap
+import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 import requests
 from PIL import Image, ImageDraw, ImageFont
 from datetime import datetime
 import os
 import tempfile
-from config import ConfigManager
-from logger import AustralLogger, log_action
 from lojas import lojas
-from utils import setup_window_icon
-from utils import UIHelper
-from utils import FONT_LABEL, FONT_ENTRY
-
-import sys
 from pathlib import Path
+import sys
+
+# Constantes
+FONT_ENTRY = ("Helvetica", 10)
+FONT_LABEL = ("Helvetica", 10)
 
 def get_resource_path(filename: str) -> str:
     """
@@ -38,13 +36,19 @@ def get_resource_path(filename: str) -> str:
         print(f"Erro ao localizar recurso {filename}: {e}")
         return None
 
+def center_window(window):
+    """Centraliza a janela na tela"""
+    window.update_idletasks()
+    width = window.winfo_width()
+    height = window.winfo_height()
+    x = (window.winfo_screenwidth() // 2) - (width // 2)
+    y = (window.winfo_screenheight() // 2) - (height // 2)
+    window.geometry(f'{width}x{height}+{x}+{y}')
 
 class EtiquetaClientesApp:
     def __init__(self, root):
         self.root = root
         self.root.title("SISTEMA AUSTRAL - ETIQUETA ENVIO CLIENTES")
-        self.config = ConfigManager()
-        self.logger = AustralLogger()
         self.endereco_completo = {}
         
         # Configurações da impressora térmica (80mm)
@@ -54,12 +58,11 @@ class EtiquetaClientesApp:
         self.MARGEM = 40
 
         self.setup_ui()
-        setup_window_icon(self.root)
-        self.load_last_values()
+        self.setup_icon()
         
         # Define um tamanho inicial mais compacto para a janela
         self.root.geometry("500x500")
-        self.center_window()  # Centraliza a janela na tela do usuário
+        center_window(self.root)  # Centraliza a janela na tela do usuário
 
     def setup_ui(self):
         """Configura a interface compacta com foco em delivery"""
@@ -150,14 +153,14 @@ class EtiquetaClientesApp:
             entry.bind(bind_event, bind_func)
         return entry
 
-    def center_window(self):
-        """Centraliza a janela na tela do usuário"""
-        self.root.update_idletasks()
-        width = self.root.winfo_width()
-        height = self.root.winfo_height()
-        x = (self.root.winfo_screenwidth() // 2) - (width // 2)
-        y = (self.root.winfo_screenheight() // 2) - (height // 2)
-        self.root.geometry(f'{width}x{height}+{x}+{y}')
+    def setup_icon(self):
+        """Configura o ícone da janela"""
+        try:
+            icon_path = get_resource_path("icon.ico")
+            if icon_path:
+                self.root.iconbitmap(icon_path)
+        except Exception:
+            pass
 
     def criar_imagem_etiqueta(self):
         """Cria a imagem da etiqueta otimizada para impressora térmica"""
@@ -188,18 +191,16 @@ class EtiquetaClientesApp:
                 imagem.paste(logo, (x_pos, y), mask=logo if 'A' in logo.getbands() else None)
                 y += logo_height + 20
             else:
-                UIHelper.show_message(
+                messagebox.showwarning(
                     "AVISO",
-                    "Logo não encontrado. Usando texto como alternativa.",
-                    "warning"
+                    "Logo não encontrado. Usando texto como alternativa."
                 )
                 draw.text((self.MARGEM, y), "Austral", font=fonte_titulo, fill="black")
                 y += 50
         except Exception as e:
-            UIHelper.show_message(
+            messagebox.showwarning(
                 "AVISO",
-                f"Erro ao carregar logo: {str(e)}. Usando texto como alternativa.",
-                "warning"
+                f"Erro ao carregar logo: {str(e)}. Usando texto como alternativa."
             )
             draw.text((self.MARGEM, y), "Austral", font=fonte_titulo, fill="black")
             y += 50
@@ -344,7 +345,6 @@ class EtiquetaClientesApp:
         self.preview_text.insert(tk.END, "\n".join(preview))
         self.preview_text.config(state='disabled')
 
-    @log_action("print_delivery_label")
     def gerar_etiqueta(self):
         """Gera e mostra a etiqueta"""
         if not self.validar_campos():
@@ -363,7 +363,6 @@ class EtiquetaClientesApp:
             # Mostra a imagem em vez de imprimir
             imagem.show()
             
-            self.save_last_values()
             messagebox.showinfo("SUCESSO", "Etiqueta gerada com sucesso!")
             
         except Exception as e:
@@ -395,18 +394,6 @@ class EtiquetaClientesApp:
         self.referencia_entry.delete(0, tk.END)
         self.endereco_completo = {}
         self.atualizar_preview()
-
-    def save_last_values(self):
-        """Salva os últimos valores utilizados"""
-        self.config.set('etiqueta_clientes.last_values', {
-            'loja': self.loja_var.get()
-        })
-
-    def load_last_values(self):
-        """Carrega os últimos valores utilizados"""
-        last_values = self.config.get('etiqueta_clientes.last_values', {})
-        if last_values:
-            self.loja_var.set(last_values.get('loja', ''))
 
     @staticmethod
     def ajustar_texto_largura(draw, texto: str, fonte, largura_maxima: int) -> list:

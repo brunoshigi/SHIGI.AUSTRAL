@@ -4,6 +4,7 @@ import ttkbootstrap as ttk
 import sqlite3
 import pandas as pd
 from datetime import datetime
+import os
 from config import ConfigManager
 from logger import AustralLogger, log_action
 from utils import FONT_LABEL, FONT_ENTRY
